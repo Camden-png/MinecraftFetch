@@ -1,1 +1,2 @@
-*.sk linguist-language=Skript
+*.sk linguist-language=Text
+*.sk linguist-detectable=true
