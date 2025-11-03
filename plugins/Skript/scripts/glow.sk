@@ -1,0 +1,11 @@
+import:
+    org.bukkit.Bukkit
+    org.bukkit.potion.PotionEffect
+    org.bukkit.potion.PotionEffectType
+
+function apply_glow(player: player):
+    set {_effect} to new PotionEffect(PotionEffectType.GLOWING, 1728000, 1, false, false)  # One day...
+    {_player}.addPotionEffect({_effect})
+	
+function remove_glow(player: player):
+    {_player}.removePotionEffect(PotionEffectType.GLOWING)

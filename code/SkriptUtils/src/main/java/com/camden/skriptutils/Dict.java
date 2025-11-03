@@ -33,7 +33,7 @@ public class Dict {
             return mapper.writeValueAsString(map);
         } catch (Exception ex) {
             System.err.println(
-                format("Dict serialization failed '{0}'", ex.getMessage())
+                format("Dict serialization failed: '{0}'", ex.getMessage())
             );
         }
         return null;
@@ -50,7 +50,6 @@ public class Dict {
             System.err.println(
                 format("Dict deserialization failed: '{0}'", ex.getMessage())
             );
-            ex.printStackTrace();
         }
         return null;
     }

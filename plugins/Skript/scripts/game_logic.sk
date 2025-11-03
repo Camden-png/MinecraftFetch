@@ -1,17 +1,68 @@
 # === Game Logic ===
 
+import:
+    com.camden.skriptutils.Slot
+
+function check_has_bone(player: player):
+    set {_has_bone} to false
+    loop all items in {_player}'s inventory:
+        if loop-item is bone:
+            set {_has_bone} to true
+            stop loop
+
+    set {_old_status} to get_key({_player}, "has_bone")
+    if {_old_status} is {_has_bone}:
+        stop
+
+    set_key({_player}, "has_bone", {_has_bone})
+
+    # Apply / remove glow
+    if {_has_bone} is true:
+        apply_glow({_player})
+    else:
+        remove_glow({_player})
+
 # Check if player has the bone...
 every 5 ticks:
     loop all players:
-        set {_has_bone} to false
-        loop all items in the loop-player's inventory:
-            if loop-item is bone:
-                set {_has_bone} to true
-                stop loop
-
-        set_key(loop-player, "has_bone", {_has_bone})
-
-        # Update scoreboard
-        set {_dev_mode} to get_key(loop-player, "dev_mode")
-        if {_dev_mode} is true:
+        check_has_bone(loop-player)
+        
+        # Passively update scoreboard
+        if is_dev(loop-player) is true:
             set_scoreboard(loop-player)
+
+on tool change:
+    set {_old_status} to get_key(player, "is_ready")
+
+    set {_is_ready} to false
+    if tool is lime wool:
+        set {_is_ready} to true
+
+    if {_old_status} is {_is_ready}:
+        stop
+
+    set_key(player, "is_ready", {_is_ready})
+
+on command "/clear":
+    if player is not op:
+        stop
+
+    set {_is_ready} to get_key(player, "is_ready")
+    if {_is_ready} is true:
+        set_key(player, "is_ready", false)
+
+command /join:
+    trigger:
+        Slot.setSlot("%player%", 0)  # Convert to string...
+
+        loop 8 times:
+            set {_index} to loop-number - 1  # 0-based...
+            set {_item} to red wool
+            if {_index} is greater than 3:
+                set {_item} to lime wool
+            set slot {_index} of player's inventory to {_item}
+
+        set slot 8 of player's inventory to ender pearl
+
+        # Simulate tool change event
+        set_key(player, "is_ready", false)

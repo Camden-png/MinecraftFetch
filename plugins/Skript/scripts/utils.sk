@@ -21,8 +21,14 @@ function get_key(player: player, key: string) :: object:
     return {_dict}.get({_key})
 
 function set_key(player: player, key: string, value: object):
+    if {game::%{_player}%::metadata} is not set:
+        stop  # Edge-case
     set {_metadata} to {game::%{_player}%::metadata}
     set {_dict} to Dict.deserialize({_metadata})
     {_dict}.put({_key}, {_value})
     set {_serialized} to {_dict}.serialize()
     set {game::%{_player}%::metadata} to {_serialized}
+
+function is_dev(player: player) :: boolean:
+    set {_dev_mode} to get_key({_player}, "dev_mode")
+    return {_dev_mode}
