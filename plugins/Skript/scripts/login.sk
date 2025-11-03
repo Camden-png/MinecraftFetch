@@ -1,0 +1,7 @@
+# === Login ===
+
+on join:
+    set join message to "<gray>[<orange>Login<gray>] <reset>%player% logged in!"
+
+on quit:
+    set quit message to "<gray>[<orange>Logout<gray>] <reset>%player% logged out!"

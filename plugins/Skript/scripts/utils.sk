@@ -1,0 +1,28 @@
+# === Utils ===
+
+import:
+    com.camden.skriptutils.Dict
+
+function is_null(object: object) :: boolean:
+    if "%{_object}%" is "<none>":
+        return true
+    else:
+        return false
+
+function get_keys_from_metadata(metadata: string) :: strings:
+    set {_dict} to Dict.deserialize({_metadata})
+    set {_keys_string} to {_dict}.getKeysAsString()
+    set {_keys::*} to {_keys_string} split at ","
+    return {_keys::*}
+
+function get_key(player: player, key: string) :: object:
+    set {_metadata} to {game::%{_player}%::metadata}
+    set {_dict} to Dict.deserialize({_metadata})
+    return {_dict}.get({_key})
+
+function set_key(player: player, key: string, value: object):
+    set {_metadata} to {game::%{_player}%::metadata}
+    set {_dict} to Dict.deserialize({_metadata})
+    {_dict}.put({_key}, {_value})
+    set {_serialized} to {_dict}.serialize()
+    set {game::%{_player}%::metadata} to {_serialized}

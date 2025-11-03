@@ -1,0 +1,41 @@
+# === Imports ===
+
+import:
+    com.camden.skriptutils.Dict
+
+# === Constants ===
+
+options:
+    dev_title: "<light green>Dev Console"
+    green: "<light green>"
+    red: "<light red>"
+
+# === Scoreboards ===
+
+function _set_color(color: string, text: string) :: string:
+    return join {_color} and {_text}
+
+function set_color(object: object) :: string:
+    set {_string} to "%{_object}%"
+    if {_string} is "true":
+        return _set_color({@green}, {_string})
+    else if {_string} is "false":
+        return _set_color({@red}, {_string})
+    else:
+        return {_string}
+
+function set_scoreboard(player: player):
+    set {_metadata} to {game::%{_player}%::metadata}
+    set {_dict} to Dict.deserialize({_metadata})
+    set {_keys::*} to get_keys_from_metadata({_metadata})
+
+    set title of {_player}'s fastboard to {@dev_title}
+    loop {_keys::*}:
+        set {_key} to loop-value
+        set {_val} to {_dict}.get({_key})
+        if is_null({_val}) is true:
+            set {_val} to "null"
+        set {_val} to set_color({_val})
+        set {_pair} to "%{_key}%: %{_val}%"
+        set {_index} to loop-index parsed as number
+        set line {_index} of {_player}'s board to {_pair}

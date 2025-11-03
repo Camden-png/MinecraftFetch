@@ -1,0 +1,19 @@
+# === Player Initialization ===
+
+import:
+    com.camden.skriptutils.Dict
+
+function reset_player(player: player):
+    set {_dict} to new Dict()
+    {_dict}.put("dev_mode", false)
+    {_dict}.put("game_id", null)
+    {_dict}.put("has_bone", false)
+
+    set {_serialized} to {_dict}.serialize()
+    set {game::%{_player}%::metadata} to {_serialized}
+
+on connect:
+    reset_player(player)
+
+on disconnect:
+    clear {game::%player%::metadata}

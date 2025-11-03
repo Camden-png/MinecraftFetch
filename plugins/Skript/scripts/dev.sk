@@ -1,0 +1,24 @@
+# === Development Console ===
+
+on join:
+    if player is not op:
+        stop
+
+    # Player is an operator...
+    set_key(player, "dev_mode", true)
+    set_scoreboard(player)
+
+command /dev:
+    trigger:
+        if player is not op:
+            stop
+        
+        set {_val} to get_key(player, "dev_mode")
+        if {_val} is true:
+            set_key(player, "dev_mode", false)
+        else:
+            set_key(player, "dev_mode", true)
+        
+        # Update scoreboard
+        set_scoreboard(player)
+        toggle player's fastboard

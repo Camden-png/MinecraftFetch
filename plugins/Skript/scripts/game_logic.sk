@@ -1,0 +1,17 @@
+# === Game Logic ===
+
+# Check if player has the bone...
+every 5 ticks:
+    loop all players:
+        set {_has_bone} to false
+        loop all items in the loop-player's inventory:
+            if loop-item is bone:
+                set {_has_bone} to true
+                stop loop
+
+        set_key(loop-player, "has_bone", {_has_bone})
+
+        # Update scoreboard
+        set {_dev_mode} to get_key(loop-player, "dev_mode")
+        if {_dev_mode} is true:
+            set_scoreboard(loop-player)
