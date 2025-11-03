@@ -8,6 +8,7 @@ on join:
     set_key(player, "dev_mode", true)
     set_scoreboard(player)
 
+# Toggle developer mode...
 command /dev:
     trigger:
         if player is not op:
@@ -22,3 +23,12 @@ command /dev:
         # Update scoreboard
         set_scoreboard(player)
         toggle player's fastboard
+
+command /debug [<player>]:
+    trigger:
+        set {_target} to player
+        if arg-1 is set:
+            set {_target} to arg-1
+        set {_metadata} to {game::%{_target}%::metadata}
+        set {_message} to "<gray>[<light green>Debug<gray>] <reset>%{_target}%'s data...%nl%%{_metadata}%"
+        send {_message} to player

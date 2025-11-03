@@ -1,3 +1,5 @@
+# === Glow ===
+
 import:
     org.bukkit.Bukkit
     org.bukkit.potion.PotionEffect

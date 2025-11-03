@@ -1,5 +1,7 @@
 package com.camden.skriptutils;
 
+import com.fasterxml.jackson.core.util.DefaultIndenter;
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -30,7 +32,10 @@ public class Dict {
 
     public String serialize() {
         try {
-            return mapper.writeValueAsString(map);
+            DefaultPrettyPrinter printer = new DefaultPrettyPrinter();
+            printer.indentObjectsWith(new DefaultIndenter("  ", "\n"));
+            printer.indentArraysWith(new DefaultIndenter("  ", "\n"));
+            return mapper.writer(printer).writeValueAsString(map);
         } catch (Exception ex) {
             System.err.println(
                 format("Dict serialization failed: '{0}'", ex.getMessage())
