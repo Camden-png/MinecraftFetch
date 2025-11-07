@@ -1,28 +1,40 @@
-# === Imports ===
+# === Scoreboards ===
 
 import:
     com.camden.skriptutils.Dict
 
-# === Constants ===
-
 options:
     dev_title: "<light green>Dev Console"
     green: "<light green>"
+    yellow: "<yellow>"
     red: "<light red>"
+    gray: "<light gray>"
+    lobby_enum: export_lobby_enum()
+    in_game_enum: export_in_game_enum()
+    colors_dict: _create_colors_dict()
 
-# === Scoreboards ===
+function _create_colors_dict() :: string:
+    set {_dict} to new Dict()
+    {_dict}.put("true", {@green})
+    {_dict}.put("false", {@red})
+    {_dict}.put("null", {@gray})
+    {_dict}.put({@lobby_enum}, {@yellow})
+    {_dict}.put({@in_game_enum}, {@yellow})
+    set {_serialized} to {_dict}.serialize()
+    return {_serialized}
 
 function _set_color(color: string, text: string) :: string:
     return join {_color} and {_text}
 
 function set_color(object: object) :: string:
     set {_string} to "%{_object}%"
-    if {_string} is "true":
-        return _set_color({@green}, {_string})
-    else if {_string} is "false":
-        return _set_color({@red}, {_string})
-    else:
+    set {_keys::*} to get_keys_from_metadata({@colors_dict})
+    if {_keys::*} does not contain {_string}:
         return {_string}
+
+    set {_dict} to Dict.deserialize({@colors_dict})
+    set {_color} to {_dict}.get({_string})
+    return _set_color({_color}, {_string})
 
 function set_scoreboard(player: player):
     set {_metadata} to {game::%{_player}%::metadata}

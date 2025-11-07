@@ -3,11 +3,29 @@
 import:
     com.camden.skriptutils.Dict
 
+# === Universal Constants ===
+
+options:
+    spawn: "8.5, -60, 8.5"
+    world_name: "world"
+    lobby_enum: "lobby"
+    in_game_enum: "in_game"
+
+# === Exports ===
+
+function export_lobby_enum() :: string:
+    return {@lobby_enum}
+
+function export_in_game_enum() :: string:
+    return {@in_game_enum}
+
+# === General Utils ===
+
 function is_null(object: object) :: boolean:
-    if "%{_object}%" is "<none>":
+    set {_list::*} to "null" and "<none>"
+    if {_list::*} contains "%{_object}%":
         return true
-    else:
-        return false
+    return false
 
 function get_keys_from_metadata(metadata: string) :: strings:
     set {_dict} to Dict.deserialize({_metadata})
@@ -21,14 +39,38 @@ function get_key(player: player, key: string) :: object:
     return {_dict}.get({_key})
 
 function set_key(player: player, key: string, value: object):
+    # Edge-case: not set...
     if {game::%{_player}%::metadata} is not set:
-        stop  # Edge-case
+        stop
+      # Edge-case: Skript stringified null...
+    if is_null({_value}) is true:
+        set {_value} to null
     set {_metadata} to {game::%{_player}%::metadata}
     set {_dict} to Dict.deserialize({_metadata})
     {_dict}.put({_key}, {_value})
     set {_serialized} to {_dict}.serialize()
     set {game::%{_player}%::metadata} to {_serialized}
 
+function tp_to_spawn(player: player):
+    set {_split::*} to {@spawn} split at ", "
+    set {_x} to {_split::1} parsed as number
+    set {_y} to {_split::2} parsed as number
+    set {_z} to {_split::3} parsed as number
+    teleport {_player} to location {_x}, {_y}, {_z} in world {@world_name}
+
 function is_dev(player: player) :: boolean:
-    set {_dev_mode} to get_key({_player}, "dev_mode")
-    return {_dev_mode}
+    return get_key({_player}, "dev_mode")
+
+function in_lobby(player: player) :: boolean:
+    set {_status} to get_key({_player}, "status")
+    if {_status} is {@lobby_enum}:
+        return true
+    return false
+
+function in_game(player: player) :: boolean:
+    if in_lobby({_player}) is true:
+        return true
+    set {_status} to get_key({_player}, "status")
+    if {_status} is {@in_game_enum}:
+        return true
+    return false

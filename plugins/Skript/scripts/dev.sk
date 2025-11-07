@@ -1,13 +1,5 @@
 # === Development Console ===
 
-on join:
-    if player is not op:
-        stop
-
-    # Player is an operator...
-    set_key(player, "dev_mode", true)
-    set_scoreboard(player)
-
 # Toggle developer mode...
 command /dev:
     trigger:

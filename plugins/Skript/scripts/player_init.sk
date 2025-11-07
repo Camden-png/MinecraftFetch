@@ -3,18 +3,43 @@
 import:
     com.camden.skriptutils.Dict
 
-function reset_player(player: player):
+function init_player(player: player):
+    if {game::%{_player}%::metadata} is set:
+        if in_game({_player}) is true:
+            _reset_player({_player})
+
     set {_dict} to new Dict()
-    {_dict}.put("dev_mode", false)
-    {_dict}.put("game_id", null)
+    set {_is_dev} to false
+    if {_player} is op:
+        set {_is_dev} to true
+    {_dict}.put("dev_mode", {_is_dev})
+    {_dict}.put("prev_gm", null)
+    {_dict}.put("level", null)
+    {_dict}.put("status", null)  # Enum...
     {_dict}.put("is_ready", false)
     {_dict}.put("has_bone", false)
 
     set {_serialized} to {_dict}.serialize()
     set {game::%{_player}%::metadata} to {_serialized}
 
-on connect:
-    reset_player(player)
+# === Connect / Disconnect ===
 
-on disconnect:
-    clear {game::%player%::metadata}
+on join:
+    init_player(player)
+    set join message to "<gray>[<orange>Login<gray>] <reset>%player% logged in!"
+
+on quit:
+    set quit message to "<gray>[<orange>Logout<gray>] <reset>%player% logged out!"
+
+# Prevent players from modifying the world...
+on break:
+    if player is op:
+        if in_game(player) is false:
+            stop
+    cancel event
+
+on place:
+    if player is op:
+        if in_game(player) is false:
+            stop
+        cancel event

@@ -3,6 +3,12 @@
 import:
     com.camden.skriptutils.Slot
 
+options:
+    not_ready: "<red><bold>Not Ready X"
+    ready: "<lime green><bold>Ready ✔"
+    home: "<yellow><bold>Return Home ❮❮"
+    lobby_enum: export_lobby_enum()
+
 function check_has_bone(player: player):
     set {_has_bone} to false
     loop all items in {_player}'s inventory:
@@ -32,10 +38,13 @@ every 5 ticks:
             set_scoreboard(loop-player)
 
 on tool change:
+    if in_lobby(player) is false:
+        stop
+
     set {_old_status} to get_key(player, "is_ready")
 
     set {_is_ready} to false
-    if tool is lime wool:
+    if tool is lime banner:
         set {_is_ready} to true
 
     if {_old_status} is {_is_ready}:
@@ -57,12 +66,62 @@ command /join:
 
         loop 8 times:
             set {_index} to loop-number - 1  # 0-based...
-            set {_item} to red wool
+            set {_item} to red banner named {@not_ready}
             if {_index} is greater than 3:
-                set {_item} to lime wool
+                set {_item} to lime banner named {@ready}
             set slot {_index} of player's inventory to {_item}
 
-        set slot 8 of player's inventory to ender pearl
+        set slot 8 of player's inventory to ender pearl named {@home}
+
+        set {_gm} to gamemode of player
+        set_key(player, "prev_gm", "%{_gm}%")  # Lower string by converting...
+        set gamemode of player to survival
+        
+        set_key(player, "status", {@lobby_enum})
 
         # Simulate tool change event
         set_key(player, "is_ready", false)
+
+        # Infinite health exploit here...
+        set health of player to 20
+        feed player
+
+function _reset_player(player: player):
+    set {_gm} to get_key({_player}, "prev_gm")
+    if is_null({_gm}) is false:
+        set {_gm} to {_gm} parsed as gamemode
+        set gamemode of {_player} to {_gm}
+        set_key({_player}, "prev_gm", null)
+    clear inventory of {_player}
+    tp_to_spawn({_player})
+
+function home(player: player):
+    set_key({_player}, "status", null)  # Not needed for player init...
+    set_key({_player}, "is_ready", false)  # Not needed for player init...
+    _reset_player({_player})
+
+# === Commands ===
+
+command /home:
+    trigger:
+        home(player)
+
+command /leave:
+    trigger:
+        home(player)
+
+on rightclick holding an ender pearl:
+    if in_lobby(player) is true:
+        home(player)
+        cancel event
+
+# === Edge-cases ===
+
+# Item pickup, item drop, item move, etc.
+on inventory click:
+    if in_lobby(player) is true:
+        cancel event
+
+on drop:
+    if in_lobby(player) is true:
+        cancel event
