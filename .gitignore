@@ -29,5 +29,6 @@ plugins/Skript/scripts/*
 !plugins/Skript/scripts/*.sk
 
 code/*/target/
+code/SkriptUtils/dependency-reduced-pom.xml
 
 world*/

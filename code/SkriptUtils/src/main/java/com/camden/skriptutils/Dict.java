@@ -18,6 +18,10 @@ public class Dict {
         map.put(key, value);
     }
 
+    public void putAll(Map<String, Object> _map) {
+        map.putAll(_map);
+    }
+
     public Object get(String key) {
         return map.get(key);
     }

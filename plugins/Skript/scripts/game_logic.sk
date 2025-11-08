@@ -117,7 +117,7 @@ on rightclick holding an ender pearl:
 
 # === Edge-cases ===
 
-# Item pickup, item drop, item move, etc.
+# Item drop, item move, etc.
 on inventory click:
     if in_lobby(player) is true:
         cancel event
