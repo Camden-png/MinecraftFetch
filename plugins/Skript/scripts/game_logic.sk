@@ -60,8 +60,19 @@ on command "/clear":
     if {_is_ready} is true:
         set_key(player, "is_ready", false)
 
-command /join:
+command /join [<text>]:
     trigger:
+        set {_level_name} to "default"
+        if arg-1 is set:
+            set {_level_name} to arg-1
+
+        set {_tuple::*} to join_level(player, {_level_name})
+        set {_success} to {_tuple::1}
+        set {_message} to {_tuple::2}
+        send {_message} to player
+        if {_success} is false:
+            stop
+
         Slot.setSlot("%player%", 0)  # Convert to string...
 
         loop 8 times:
@@ -86,33 +97,15 @@ command /join:
         set health of player to 20
         feed player
 
-function _reset_player(player: player):
-    set {_gm} to get_key({_player}, "prev_gm")
-    if is_null({_gm}) is false:
-        set {_gm} to {_gm} parsed as gamemode
-        set gamemode of {_player} to {_gm}
-        set_key({_player}, "prev_gm", null)
-    clear inventory of {_player}
-    tp_to_spawn({_player})
-
-function home(player: player):
-    set_key({_player}, "status", null)  # Not needed for player init...
-    set_key({_player}, "is_ready", false)  # Not needed for player init...
-    _reset_player({_player})
-
 # === Commands ===
 
 command /home:
     trigger:
-        home(player)
-
-command /leave:
-    trigger:
-        home(player)
+        _reset_player(player)
 
 on rightclick holding an ender pearl:
     if in_lobby(player) is true:
-        home(player)
+        _reset_player(player)
         cancel event
 
 # === Edge-cases ===

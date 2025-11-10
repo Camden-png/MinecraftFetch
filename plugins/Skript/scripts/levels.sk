@@ -1,16 +1,52 @@
 import:
+    com.camden.skriptutils.Dict
     com.camden.skriptutils.YAML
 
-on load:
-    set {_level_name} to "default"
+options:
+    level_names: "default"  # Add more later...
+
+function _init_level(level_name: text):
     set {_yaml_name} to join {_level_name} and ".yaml"
 
     set {_dict} to YAML.load({_yaml_name})
-    
+
     {_dict}.put("status", null)
     clear {_players::*} 
     {_dict}.put("players", {_players::*})
     set {_serialized} to {_dict}.serialize()
 
     set {level::%{_level_name}%::metadata} to {_serialized}
-    broadcast "%{level::%{_level_name}%::metadata}%"
+
+function _get_levels() :: texts:
+    set {_level_names::*} to {@level_names} split at ", "
+    return {_level_names::*}
+
+function init_levels():  # Or reset...
+    set {_level_names::*} to _get_levels()
+    loop {_level_names::*}:
+        _init_level(loop-value)
+
+on load:
+    init_levels()
+
+function _add_player(player: player, level_name: text):
+    set {_metadata} to {level::%{_level_name}%::metadata}
+    set {_dict} to Dict.deserialize({_metadata})
+    set {_players_list} to {_dict}.get("players")
+    {_players_list}.add("%{_player}%")  # Convert to string...
+    {_dict}.put("players", {_players_list})
+    set {_serialized} to {_dict}.serialize()
+    set {level::%{_level_name}%::metadata} to {_serialized}
+
+# Returns (success status (bool), message (text))
+function join_level(player: player, level_name: text) :: objects:
+    set {_level_names::*} to _get_levels()
+    if {_level_names::*} does not contain {_level_name}:
+        set {_returns::*} to false and "'%{_level_name}%' does not exist!"
+        return {_returns::*}
+
+    # TODO: game is full...
+    _add_player({_player}, {_level_name})
+
+    set {_returns::*} to true and ""
+    return {_returns::*}

@@ -16,11 +16,28 @@ command /dev:
         set_scoreboard(player)
         toggle player's fastboard
 
-command /debug [<player>]:
+command /debug [<text>]:
     trigger:
-        set {_target} to player
+        clear {_target}
+        clear {_metadata}
+
         if arg-1 is set:
             set {_target} to arg-1
-        set {_metadata} to {game::%{_target}%::metadata}
+            if {game::%{_target}%::metadata} is set:
+                set {_metadata} to {game::%{_target}%::metadata}
+            else if {level::%{_target}%::metadata} is set:
+                set {_metadata} to {level::%{_target}%::metadata}
+                set {_target} to "%{_target}% level"
+        
+        if {_metadata} is not set:
+            set {_target} to player
+            set {_metadata} to {game::%player%::metadata}
+
         set {_message} to "<gray>[<light green>Debug<gray>] <reset>%{_target}%'s data...%nl%%{_metadata}%"
         send {_message} to player
+
+command /reset:
+    trigger:
+        loop players:
+            _reset_player(loop-player)
+        init_levels()
