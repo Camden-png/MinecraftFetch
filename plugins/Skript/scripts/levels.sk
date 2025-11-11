@@ -4,6 +4,10 @@ import:
 
 options:
     level_names: "default"  # Add more later...
+    dog_house_location: "dog_house_location"
+
+function export_dog_house_location() :: text:
+    return {@dog_house_location}
 
 function _init_level(level_name: text):
     set {_yaml_name} to join {_level_name} and ".yaml"
@@ -27,6 +31,9 @@ function init_levels():  # Or reset...
         _init_level(loop-value)
 
 on load:
+    loop players:
+        if in_lobby(loop-player) is true:
+            _reset_player(loop-player)
     init_levels()
 
 function _add_player(player: player, level_name: text):
@@ -38,8 +45,21 @@ function _add_player(player: player, level_name: text):
     set {_serialized} to {_dict}.serialize()
     set {level::%{_level_name}%::metadata} to {_serialized}
 
+function _remove_player(player: player, level_name: text):
+    set {_metadata} to {level::%{_level_name}%::metadata}
+    set {_dict} to Dict.deserialize({_metadata})
+    set {_players_list} to {_dict}.get("players")
+    {_players_list}.remove("%{_player}%")  # Convert to string...
+    {_dict}.put("players", {_players_list})
+    set {_serialized} to {_dict}.serialize()
+    set {level::%{_level_name}%::metadata} to {_serialized}
+
 # Returns (success status (bool), message (text))
-function join_level(player: player, level_name: text) :: objects:
+function _join_level(player: player, level_name: text) :: objects:
+    if in_lobby({_player}) is true:
+        set {_returns::*} to false and "You are already in a game!"
+        return {_returns::*}
+
     set {_level_names::*} to _get_levels()
     if {_level_names::*} does not contain {_level_name}:
         set {_returns::*} to false and "'%{_level_name}%' does not exist!"

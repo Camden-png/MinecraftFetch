@@ -38,6 +38,11 @@ function set_color(object: object) :: string:
 
 function set_scoreboard(player: player):
     set {_metadata} to {game::%{_player}%::metadata}
+
+    set {_mode} to get_key({_player}, "mode")
+    if {_mode} is not "user":
+        set {_metadata} to {level::%{_mode}%::metadata}
+
     set {_dict} to Dict.deserialize({_metadata})
     set {_keys::*} to get_keys_from_metadata({_metadata})
 

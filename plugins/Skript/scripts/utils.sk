@@ -10,14 +10,21 @@ options:
     world_name: "world"
     lobby_enum: "lobby"
     in_game_enum: "in_game"
+    user_enum: "user"
 
 # === Exports ===
 
-function export_lobby_enum() :: string:
+function export_world_name() :: text:
+    return {@world_name}
+
+function export_lobby_enum() :: text:
     return {@lobby_enum}
 
-function export_in_game_enum() :: string:
+function export_in_game_enum() :: text:
     return {@in_game_enum}
+
+function export_user_enum() :: text:
+    return {@user_enum}
 
 # === General Utils ===
 
@@ -27,18 +34,18 @@ function is_null(object: object) :: boolean:
         return true
     return false
 
-function get_keys_from_metadata(metadata: string) :: strings:
+function get_keys_from_metadata(metadata: text) :: texts:
     set {_dict} to Dict.deserialize({_metadata})
     set {_keys_string} to {_dict}.getKeysAsString()
     set {_keys::*} to {_keys_string} split at ","
     return {_keys::*}
 
-function get_key(player: player, key: string) :: object:
+function get_key(player: player, key: text) :: object:
     set {_metadata} to {game::%{_player}%::metadata}
     set {_dict} to Dict.deserialize({_metadata})
     return {_dict}.get({_key})
 
-function set_key(player: player, key: string, value: object):
+function set_key(player: player, key: text, value: object):
     # Edge-case: not set...
     if {game::%{_player}%::metadata} is not set:
         stop

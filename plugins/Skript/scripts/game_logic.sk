@@ -1,13 +1,16 @@
 # === Game Logic ===
 
 import:
+    com.camden.skriptutils.Dict
     com.camden.skriptutils.Slot
 
 options:
     not_ready: "<red><bold>Not Ready X"
     ready: "<lime green><bold>Ready ✔"
     home: "<yellow><bold>Return Home ❮❮"
+    world_name: export_world_name()
     lobby_enum: export_lobby_enum()
+    dog_house_location: export_dog_house_location()
 
 function check_has_bone(player: player):
     set {_has_bone} to false
@@ -32,9 +35,9 @@ function check_has_bone(player: player):
 every 5 ticks:
     loop all players:
         check_has_bone(loop-player)
-        
+
         # Passively update scoreboard
-        if is_dev(loop-player) is true:
+        if loop-player is op:
             set_scoreboard(loop-player)
 
 on tool change:
@@ -66,10 +69,15 @@ command /join [<text>]:
         if arg-1 is set:
             set {_level_name} to arg-1
 
-        set {_tuple::*} to join_level(player, {_level_name})
+        set {_tuple::*} to _join_level(player, {_level_name})
         set {_success} to {_tuple::1}
         set {_message} to {_tuple::2}
-        send {_message} to player
+
+        set {_length} to length of {_message}
+        if {_length} is greater than 0:
+            send {_message} to player
+
+        # Stop here if needed...
         if {_success} is false:
             stop
 
@@ -84,11 +92,12 @@ command /join [<text>]:
 
         set slot 8 of player's inventory to ender pearl named {@home}
 
+        set_key(player, "level_name", {_level_name})
+        set_key(player, "status", {@lobby_enum})
+
         set {_gm} to gamemode of player
         set_key(player, "prev_gm", "%{_gm}%")  # Lower string by converting...
         set gamemode of player to survival
-        
-        set_key(player, "status", {@lobby_enum})
 
         # Simulate tool change event
         set_key(player, "is_ready", false)
@@ -97,24 +106,42 @@ command /join [<text>]:
         set health of player to 20
         feed player
 
+        # Teleport player to dog house...
+        set {_metadata} to {level::%{_level_name}%::metadata}
+        set {_dict} to Dict.deserialize({_metadata})
+        set {_location} to {_dict}.get(export_dog_house_location())
+        set {_x} to {_location}.get("x")
+        set {_y} to {_location}.get("y")
+        set {_z} to {_location}.get("z")
+        teleport player to location {_x}, {_y}, {_z} in world {@world_name}
+
 # === Commands ===
 
 command /home:
     trigger:
+        if in_lobby(player) is true:
+            set {_level_name} to get_key(player, "level_name")
+            _remove_player(player, {_level_name})
         _reset_player(player)
 
 on rightclick holding an ender pearl:
     if in_lobby(player) is true:
+        set {_level_name} to get_key(player, "level_name")
+        _remove_player(player, {_level_name})
         _reset_player(player)
         cancel event
 
 # === Edge-cases ===
 
-# Item drop, item move, etc.
+# Item drop, item moves, etc.
 on inventory click:
     if in_lobby(player) is true:
         cancel event
 
 on drop:
+    if in_lobby(player) is true:
+        cancel event
+
+on swap hand item:
     if in_lobby(player) is true:
         cancel event

@@ -1,20 +1,41 @@
 # === Development Console ===
 
+options:
+    user_enum: export_user_enum()
+
 # Toggle developer mode...
-command /dev:
+command /dev [<text>]:
     trigger:
         if player is not op:
             stop
-        
-        set {_val} to get_key(player, "dev_mode")
-        if {_val} is true:
-            set_key(player, "dev_mode", false)
-        else:
+
+        set {_prev_mode} to get_key(player, "mode")
+
+        set {_mode} to {@user_enum}
+        if arg-1 is set:
+            if {level::%arg-1%::metadata} is set:
+                set {_mode} to arg-1
+
+        if {_prev_mode} is {_mode}:
+            set {_dev_mode} to get_key(player, "dev_mode")
+            if {_dev_mode} is true:
+                set_key(player, "dev_mode", false)
+            else:
+                set_key(player, "dev_mode", true)
+
+            set_scoreboard(player)
+            toggle fastboard of player
+            stop
+
+        # Switch!
+        set_key(player, "mode", {_mode})
+
+        clear fastboard of player
+        if fastboard of player is off:
             set_key(player, "dev_mode", true)
-        
-        # Update scoreboard
+            toggle fastboard of player
+
         set_scoreboard(player)
-        toggle player's fastboard
 
 command /debug [<text>]:
     trigger:
@@ -28,7 +49,7 @@ command /debug [<text>]:
             else if {level::%{_target}%::metadata} is set:
                 set {_metadata} to {level::%{_target}%::metadata}
                 set {_target} to "%{_target}% level"
-        
+
         if {_metadata} is not set:
             set {_target} to player
             set {_metadata} to {game::%player%::metadata}

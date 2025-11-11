@@ -3,6 +3,9 @@
 import:
     com.camden.skriptutils.Dict
 
+options:
+    user_enum: export_user_enum()
+
 function _reset_player(player: player):
     set_key({_player}, "status", null)
     set_key({_player}, "is_ready", false)
@@ -25,10 +28,12 @@ function init_player(player: player):
         set {_is_dev} to true
     {_dict}.put("dev_mode", {_is_dev})
     {_dict}.put("prev_gm", null)
-    {_dict}.put("level", null)
-    {_dict}.put("status", null)  # Enum...
-    {_dict}.put("is_ready", false)
+    {_dict}.put("level_name", null)
+    {_dict}.put("status", null)  # Redundant...
+    {_dict}.put("is_ready", false)  # Redundant...
     {_dict}.put("has_bone", false)
+    if {_player} is op:
+        {_dict}.put("mode", {@user_enum})
 
     set {_serialized} to {_dict}.serialize()
     set {game::%{_player}%::metadata} to {_serialized}
