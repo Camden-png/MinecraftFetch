@@ -1,13 +1,21 @@
 import:
     com.camden.skriptutils.Dict
+    com.camden.skriptutils.Slot
     com.camden.skriptutils.YAML
 
 options:
+    not_ready: "<red><bold>Not Ready X"
+    ready: "<lime green><bold>Ready ✔"
+    home: "<yellow><bold>Return Home ❮❮"
+
+    green: "light green"
+    red: "light red"
+
     level_names: "default"  # Add more later...
+    lobby_enum: export_lobby_enum()
     dog_house_location: "dog_house_location"
 
-function export_dog_house_location() :: text:
-    return {@dog_house_location}
+    sign_enum: "sign"
 
 function _init_level(level_name: text):
     set {_yaml_name} to join {_level_name} and ".yaml"
@@ -68,5 +76,96 @@ function _join_level(player: player, level_name: text) :: objects:
     # TODO: game is full...
     _add_player({_player}, {_level_name})
 
-    set {_returns::*} to true and ""
+    set {_returns::*} to true and "You joined a game!"
     return {_returns::*}
+
+function _join(player: player, level_name: text):
+    set {_tuple::*} to _join_level({_player}, {_level_name})
+    set {_success} to {_tuple::1}
+    set {_message} to {_tuple::2}
+
+    if {_success} is true:
+        set {_message} to format_message("Fetch", {_message}, {@green})
+    else:
+        set {_message} to format_message("Error", {_message}, {@red})
+    send {_message} to {_player}
+
+    # Stop here if needed...
+    if {_success} is false:
+        stop
+
+    Slot.setSlot("%{_player}%", 0)  # Convert to string...
+
+    loop 8 times:
+        set {_index} to loop-number - 1  # 0-based...
+        set {_item} to red banner named {@not_ready}
+        if {_index} is greater than 3:
+            set {_item} to lime banner named {@ready}
+        set slot {_index} of inventory of {_player} to {_item}
+
+    set slot 8 of inventory of {_player} to ender pearl named {@home}
+
+    set_key({_player}, "level_name", {_level_name})
+    set_key({_player}, "status", {@lobby_enum})
+
+    set {_gm} to gamemode of {_player}
+    set_key({_player}, "prev_gm", "%{_gm}%")  # Lower string by converting...
+    set gamemode of {_player} to survival
+
+    # Simulate tool change event
+    set_key({_player}, "is_ready", false)
+
+    # Infinite health exploit here...
+    set health of {_player} to 20
+    feed {_player}
+
+    # Teleport player to dog house...
+    set {_metadata} to {level::%{_level_name}%::metadata}
+    set {_dict} to Dict.deserialize({_metadata})
+    set {_location} to {_dict}.get({@dog_house_location})
+    set {_x} to {_location}.get("x")
+    set {_y} to {_location}.get("y")
+    set {_z} to {_location}.get("z")
+    _tp({_player}, {_x}, {_y}, {_z})
+
+    # Update level status...
+    set {_status} to get_key({_level_name}, "status")
+    if is_null({_status}) is true:
+        set_key({_level_name}, "status", {@lobby_enum})
+
+command /join [<text = "default">]:
+    trigger:
+        _join(player, arg-1)
+
+on rightclick:
+    set {_block} to "%clicked block%"  # Convert to string...
+    set {_split::*} to {_block} split at "'"
+    set {_block} to {_split::2}
+
+    set {_split::*} to {_block} split at " "
+    set {_length} to size of {_split::*}
+    set {_last_word} to {_split::%{_length}%}
+
+    if {_last_word} is not {@sign_enum}:
+        stop
+
+    # Is sign...
+    set {_continue} to true
+    if is_dev(player) is true:
+        if in_game(player) is false:
+            if player is sneaking:
+                set {_continue} to false
+
+    if {_continue} is false:
+        stop
+
+    set {_line_2} to line 2 of clicked block
+    set {_line_2} to {_line_2} in lowercase
+    if {_line_2} is not "join":
+        stop
+
+    # Is join...
+    set {_line_3} to line 3 of clicked block
+    _join(player, {_line_3})
+
+    cancel event

@@ -1,6 +1,7 @@
 # === Development Console ===
 
 options:
+    green: "light green"
     user_enum: export_user_enum()
 
 # Toggle developer mode...
@@ -27,7 +28,7 @@ command /dev [<text>]:
             toggle fastboard of player
             stop
 
-        # Switch!
+        # Switch...
         set_key(player, "mode", {_mode})
 
         clear fastboard of player
@@ -54,7 +55,7 @@ command /debug [<text>]:
             set {_target} to player
             set {_metadata} to {game::%player%::metadata}
 
-        set {_message} to "<gray>[<light green>Debug<gray>] <reset>%{_target}%'s data...%nl%%{_metadata}%"
+        set {_message} to format_message("Debug", "%{_target}%'s data...%nl%%{_metadata}%", {@green})
         send {_message} to player
 
 command /reset:
