@@ -6,7 +6,7 @@ import:
 # === Universal Constants ===
 
 options:
-    spawn: "8.5, -60, 8.5"
+    spawn: "8.5, 0, 8.5"
     world_name: "world"
     lobby_enum: "lobby"
     in_game_enum: "in_game"
@@ -33,6 +33,13 @@ function is_null(object: object) :: boolean:
     if {_list::*} contains "%{_object}%":
         return true
     return false
+
+function convert_to_skript_list(list: object) :: texts:
+    set {_string} to "%{_list}%"  # Convert to string...
+    set {_length} to length of {_string}
+    set {_trim} to substring of {_string} from 2 to {_length} - 1
+    set {_split::*} to {_trim} split at ", "
+    return {_split::*}
 
 function get_keys_from_metadata(metadata: text) :: texts:
     set {_dict} to Dict.deserialize({_metadata})
@@ -90,20 +97,33 @@ function set_key(target: object, key: text, value: object):
     set {_serialized} to {_dict}.serialize()
     set {%{_prefix}%::%{_target}%::metadata} to {_serialized}
 
-function format_message(prefix: text, message: text, color: text = "white") :: text:
+function format_message(prefix: text, message: text, color: text = "white", square_brackets: boolean = true) :: text:
     set {_color} to formatted "<%{_color}%>"
-    return "<gray>[%{_color}%%{_prefix}%<gray>] <reset>%{_message}%"
+
+    set {_bracket_1} to "["
+    set {_bracket_2} to "]"
+    if {_square_brackets} is false:
+        set {_bracket_1} to "<"
+        set {_bracket_2} to ">"
+
+    return "<gray>%{_bracket_1}%%{_color}%%{_prefix}%<gray>%{_bracket_2}% <reset>%{_message}%"
 
 function is_dev(player: player) :: boolean:
     return get_key({_player}, "dev_mode")
 
-function _tp(player: player, x: number, y: number, z: number, world_name: text = {@world_name}):
-    teleport {_player} to location {_x}, {_y}, {_z} in world {_world_name}
+function _tp(player: player, x: number, y: number, z: number, yaw: object = null, world_name: text = {@world_name}):
+    set {_location} to location {_x}, {_y}, {_z} in world {_world_name}
+    if is_null({_yaw}) is false:
+        set {_yaw} to {_yaw} parsed as number
+        set yaw of {_location} to {_yaw}
 
-function tp_to_spawn(player: player):
+    teleport {_player} to {_location}
+
+function tp_to_spawn(player: player, y_offset: number = 0):
     set {_split::*} to {@spawn} split at ", "
     set {_x} to {_split::1} parsed as number
     set {_y} to {_split::2} parsed as number
+    set {_y} to {_y} + {_y_offset}
     set {_z} to {_split::3} parsed as number
     _tp({_player}, {_x}, {_y}, {_z})
 

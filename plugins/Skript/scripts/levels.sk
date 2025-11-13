@@ -6,14 +6,15 @@ import:
 options:
     not_ready: "<red><bold>Not Ready X"
     ready: "<lime green><bold>Ready ✔"
-    home: "<yellow><bold>Return Home ❮❮"
+    home: "<yellow><bold>Leave ❮❮"
 
     green: "light green"
     red: "light red"
 
     level_names: "default"  # Add more later...
     lobby_enum: export_lobby_enum()
-    dog_house_location: "dog_house_location"
+    lobby_location: "lobby_location"
+    dog_house_location: "dog_house_location"  # Currently unused...
 
     sign_enum: "sign"
 
@@ -25,16 +26,18 @@ function _init_level(level_name: text):
     {_dict}.put("status", null)
     clear {_players::*} 
     {_dict}.put("players", {_players::*})
-    set {_serialized} to {_dict}.serialize()
+    clear {_ready_players::*}
+    {_dict}.put("ready_players", {_ready_players::*})
 
+    set {_serialized} to {_dict}.serialize()
     set {level::%{_level_name}%::metadata} to {_serialized}
 
-function _get_levels() :: texts:
+function get_levels() :: texts:
     set {_level_names::*} to {@level_names} split at ", "
     return {_level_names::*}
 
 function init_levels():  # Or reset...
-    set {_level_names::*} to _get_levels()
+    set {_level_names::*} to get_levels()
     loop {_level_names::*}:
         _init_level(loop-value)
 
@@ -44,21 +47,21 @@ on load:
             _reset_player(loop-player)
     init_levels()
 
-function _add_player(player: player, level_name: text):
+function _add_player(player: player, level_name: text, key: text = "players"):
     set {_metadata} to {level::%{_level_name}%::metadata}
     set {_dict} to Dict.deserialize({_metadata})
-    set {_players_list} to {_dict}.get("players")
+    set {_players_list} to {_dict}.get({_key})
     {_players_list}.add("%{_player}%")  # Convert to string...
-    {_dict}.put("players", {_players_list})
+    {_dict}.put({_key}, {_players_list})
     set {_serialized} to {_dict}.serialize()
     set {level::%{_level_name}%::metadata} to {_serialized}
 
-function _remove_player(player: player, level_name: text):
+function _remove_player(player: player, level_name: text, key: text = "players"):
     set {_metadata} to {level::%{_level_name}%::metadata}
     set {_dict} to Dict.deserialize({_metadata})
-    set {_players_list} to {_dict}.get("players")
+    set {_players_list} to {_dict}.get({_key})
     {_players_list}.remove("%{_player}%")  # Convert to string...
-    {_dict}.put("players", {_players_list})
+    {_dict}.put({_key}, {_players_list})
     set {_serialized} to {_dict}.serialize()
     set {level::%{_level_name}%::metadata} to {_serialized}
 
@@ -68,7 +71,7 @@ function _join_level(player: player, level_name: text) :: objects:
         set {_returns::*} to false and "You are already in a game!"
         return {_returns::*}
 
-    set {_level_names::*} to _get_levels()
+    set {_level_names::*} to get_levels()
     if {_level_names::*} does not contain {_level_name}:
         set {_returns::*} to false and "'%{_level_name}%' does not exist!"
         return {_returns::*}
@@ -119,10 +122,8 @@ function _join(player: player, level_name: text):
     set health of {_player} to 20
     feed {_player}
 
-    # Teleport player to dog house...
-    set {_metadata} to {level::%{_level_name}%::metadata}
-    set {_dict} to Dict.deserialize({_metadata})
-    set {_location} to {_dict}.get({@dog_house_location})
+    # Teleport player to lobby...
+    set {_location} to get_key({_level_name}, {@lobby_location})
     set {_x} to {_location}.get("x")
     set {_y} to {_location}.get("y")
     set {_z} to {_location}.get("z")

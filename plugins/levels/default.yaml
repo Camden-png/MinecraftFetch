@@ -1,6 +1,13 @@
 level_name: default
 
+g_eq: 2  # Number of needed players, >= 2
+
+lobby_location:
+  x: 8.5
+  y: 0
+  z: 25.5
+
 dog_house_location:
   x: 8.5
-  y: -60
-  z: 8.5
+  y: 0
+  z: 25.5

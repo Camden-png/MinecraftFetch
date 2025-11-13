@@ -33,3 +33,5 @@ code/*/target/
 code/SkriptUtils/dependency-reduced-pom.xml
 
 world*/
+
+wepif.yml

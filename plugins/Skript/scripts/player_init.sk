@@ -4,10 +4,12 @@ import:
     com.camden.skriptutils.Dict
 
 options:
+    green: "light green"
+    yellow: "yellow"
     user_enum: export_user_enum()
 
 # `hard` defaults to true...
-function _reset_player(player: player, hard: boolean = true):
+function _reset_player(player: player, hard: boolean = true, y_offset: number = 0):
     if {_hard} is true:
         set_key({_player}, "level_name", null)
         set_key({_player}, "status", null)
@@ -20,7 +22,7 @@ function _reset_player(player: player, hard: boolean = true):
         set_key({_player}, "prev_gm", null)
 
     clear inventory of {_player}
-    tp_to_spawn({_player})
+    tp_to_spawn({_player}, {_y_offset})
 
 function init_player(player: player):
     if {game::%{_player}%::metadata} is set:
@@ -66,3 +68,11 @@ on place:
         if in_game(player) is false:
             stop
         cancel event
+
+# Etc ...
+on chat:
+    set {_color} to {@yellow}
+    if player is op:
+        set {_color} to {@green}
+    set {_message} to format_message("%player%", message, {_color}, false)
+    set chat format to {_message}

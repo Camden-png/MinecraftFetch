@@ -3,6 +3,10 @@
 options:
     green: "light green"
     red: "light red"
+    lobby_enum: export_lobby_enum()
+
+import:
+    com.camden.skriptutils.Dict
 
 function check_has_bone(player: player):
     set {_has_bone} to false
@@ -24,13 +28,59 @@ function check_has_bone(player: player):
         remove_glow({_player})
 
 # Check if player has the bone...
-every 5 ticks:
+every 3 ticks:
     loop all players:
-        check_has_bone(loop-player)
+        if in_game(loop-player, true) is true:  # Strict...
+            check_has_bone(loop-player)
 
         # Passively update scoreboard
         if loop-player is op:
             set_scoreboard(loop-player)
+
+# Check if lobby is ready...
+every 5 ticks:
+    set {_level_names::*} to get_levels()
+    loop {_level_names::*}:
+        set {_level_name} to loop-value
+
+        set {_status} to get_key({_level_name}, "status")
+        if {_status} is not {@lobby_enum}:
+            continue
+
+        set {_players_list} to get_key({_level_name}, "players")
+        set {_players::*} to convert_to_skript_list({_players_list})  # Conver to Skript...
+
+        # Avoid unlikely race condition...
+        clear {_ready_players::*}  # Skript...
+        loop {_players::*}:
+            set {_player} to loop-value-2
+            set {_player} to {_player} parsed as player
+            set {_player_name} to "%{_player}%"
+
+            set {_is_ready} to get_key({_player}, "is_ready")
+            if {_is_ready} is true:
+                add {_player_name} to {_ready_players::*}
+
+        set {_metadata} to {level::%{_level_name}%::metadata}
+        set {_dict} to Dict.deserialize({_metadata})
+        set {_ready_players_list} to {_dict}.get("ready_players")
+
+        {_ready_players_list}.clear()
+
+        loop {_ready_players::*}:  # Cannot use `addAll(...)`...
+            set {_player_name} to loop-value-2
+            {_ready_players_list}.add({_player_name})
+
+        {_dict}.put("ready_players", {_ready_players_list})
+        set {_serialized} to {_dict}.serialize()
+        set {level::%{_level_name}%::metadata} to {_serialized}
+
+        # Check enough players...
+        set {_min_players} to get_key({_level_name}, "g_eq")
+        set {_min_players} to 1
+        set {_num_curr_players} to size of {_ready_players::*}
+        if {_num_curr_players} is greater than or equal to {_min_players}:
+            broadcast "Can start up game..."
 
 on tool change:
     if in_lobby(player) is false:
@@ -49,7 +99,7 @@ on tool change:
 
 # === Commands ===
 
-function _leave(player: player):
+function _leave(player: player, y_offset: number = 0):
     if in_game({_player}) is false:
         set {_message} to format_message("Error", "You are not in a game!", {@red})
         send {_message} to {_player}
@@ -60,7 +110,7 @@ function _leave(player: player):
     _remove_player({_player}, {_level_name})
 
     if {_player} is online:
-        _reset_player({_player})
+        _reset_player({_player}, true, {_y_offset})  # Hard
         set {_message} to format_message("Fetch", "You left a game!", {@green})
         send {_message} to {_player}
 
@@ -70,10 +120,6 @@ function _leave(player: player):
     if {_length} is 0:
         set_key({_level_name}, "status", null)
 
-command /home:
-    trigger:
-        _leave(player)
-
 command /leave:
     trigger:
         _leave(player)
@@ -82,6 +128,21 @@ on rightclick holding an ender pearl:
     if in_lobby(player) is true:  # ONLY allow in lobby...
         _leave(player)
         cancel event
+
+command /spawn [<text>]:
+    trigger:
+        set {_y_offset} to 0
+        if player is op:
+            if arg-1 is "debug":
+                set {_y_offset} to 4
+
+        if in_game(player) is true:
+            _leave(player, {_y_offset})
+            stop
+        
+        set {_message} to format_message("TP", "Teleported...", {@green})
+        send {_message} to player
+        tp_to_spawn(player, {_y_offset})
 
 # === Edge-cases ===
 
