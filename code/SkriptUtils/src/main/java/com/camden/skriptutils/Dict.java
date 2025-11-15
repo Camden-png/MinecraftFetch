@@ -30,10 +30,6 @@ public class Dict {
         return new ArrayList<>(map.keySet());
     }
 
-    public String getKeysAsString() {
-        return String.join(",", getKeys());
-    }
-
     public String serialize() {
         try {
             DefaultPrettyPrinter printer = new DefaultPrettyPrinter();

@@ -47,8 +47,8 @@ function convert_to_skript_list(list: object) :: texts:
 
 function get_keys_from_metadata(metadata: text) :: texts:
     set {_dict} to Dict.deserialize({_metadata})
-    set {_keys_string} to {_dict}.getKeysAsString()
-    set {_keys::*} to {_keys_string} split at ","
+    set {_keys_list} to {_dict}.getKeys()
+    set {_keys::*} to convert_to_skript_list({_keys_list})
     return {_keys::*}
 
 function get_key(target: object, key: text) :: object:
