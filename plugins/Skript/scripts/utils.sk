@@ -8,6 +8,7 @@ import:
 options:
     spawn: "8.5, 0, 8.5"
     world_name: "world"
+    menu_enum: "menu"
     lobby_enum: "lobby"
     in_game_enum: "in_game"
     user_enum: "user"
@@ -16,6 +17,9 @@ options:
 
 function export_world_name() :: text:
     return {@world_name}
+
+function export_menu_enum() :: text:
+    return {@menu_enum}
 
 function export_lobby_enum() :: text:
     return {@lobby_enum}
@@ -126,6 +130,12 @@ function tp_to_spawn(player: player, y_offset: number = 0):
     set {_y} to {_y} + {_y_offset}
     set {_z} to {_split::3} parsed as number
     _tp({_player}, {_x}, {_y}, {_z})
+
+function in_menu(player: player) :: boolean:
+    set {_status} to get_key({_player}, "status")
+    if {_status} is {@menu_enum}:
+        return true
+    return false    
 
 function in_lobby(player: player) :: boolean:
     set {_status} to get_key({_player}, "status")

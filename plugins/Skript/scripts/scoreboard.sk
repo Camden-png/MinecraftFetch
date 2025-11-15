@@ -17,6 +17,7 @@ options:
 function _create_colors_key_dict() :: text:
     set {_dict} to new Dict()
     {_dict}.put("level_name", {@yellow})
+    {_dict}.put("status", {@yellow})
     set {_serialized} to {_dict}.serialize()
     return {_serialized}
 
@@ -25,8 +26,6 @@ function _create_colors_val_dict() :: text:
     {_dict}.put("true", {@green})
     {_dict}.put("false", {@red})
     {_dict}.put("null", {@gray})
-    {_dict}.put({@lobby_enum}, {@yellow})
-    {_dict}.put({@in_game_enum}, {@yellow})
     set {_serialized} to {_dict}.serialize()
     return {_serialized}
 

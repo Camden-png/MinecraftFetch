@@ -2,32 +2,42 @@
 
 import:
     com.camden.skriptutils.Dict
+    com.camden.skriptutils.ApplyPotion
 
 options:
     green: "light green"
     yellow: "yellow"
+    menu_enum: export_menu_enum()
     user_enum: export_user_enum()
 
 # `hard` defaults to true...
 function _reset_player(player: player, hard: boolean = true, y_offset: number = 0):
     if {_hard} is true:
         set_key({_player}, "level_name", null)
-        set_key({_player}, "status", null)
+        set_key({_player}, "status", {@menu_enum})
         set_key({_player}, "is_ready", false)
-    
+
     set {_gm} to get_key({_player}, "prev_gm")
     if is_null({_gm}) is false:
         set {_gm} to {_gm} parsed as gamemode
         set gamemode of {_player} to {_gm}
         set_key({_player}, "prev_gm", null)
 
+    # Remove effects...
+    set {_effects_list} to ApplyPotion.getEffects("%{_player}%")
+    set {_effects::*} to convert_to_skript_list({_effects_list})
+    loop {_effects::*}:
+        _remove_effect({_player}, loop-value)
+
+    apply_invisibility({_player})
+    send action bar "" to {_player}
+
     clear inventory of {_player}
     tp_to_spawn({_player}, {_y_offset})
 
 function init_player(player: player):
     if {game::%{_player}%::metadata} is set:
-        if in_game({_player}) is true:
-            _reset_player({_player}, false)
+        _reset_player({_player}, false)
 
     set {_dict} to new Dict()
     set {_is_dev} to false
@@ -36,7 +46,7 @@ function init_player(player: player):
     {_dict}.put("dev_mode", {_is_dev})
     {_dict}.put("prev_gm", null)
     {_dict}.put("level_name", null)
-    {_dict}.put("status", null)
+    {_dict}.put("status", {@menu_enum})
     {_dict}.put("is_ready", false)
     {_dict}.put("has_bone", false)
     if {_player} is op:
@@ -56,14 +66,22 @@ on quit:
     set {_message} to format_message("Logout", "%player% logged out!", "orange")
     set quit message to {_message}
 
+function _is_null(player: player) :: boolean:
+    set {_status} to get_key({_player}, "status")
+    return is_null({_status})
+
 # Prevent players from modifying the world...
 on break:
+    if _is_null(player) is true:
+        stop
     if player is op:
         if in_game(player) is false:
             stop
     cancel event
 
 on place:
+    if _is_null(player) is true:
+        stop
     if player is op:
         if in_game(player) is false:
             stop

@@ -72,13 +72,20 @@ every 5 ticks:
             {_ready_players_list}.add({_player_name})
 
         {_dict}.put("ready_players", {_ready_players_list})
-        set {_serialized} to {_dict}.serialize()
-        set {level::%{_level_name}%::metadata} to {_serialized}
+
+        set {_min_players} to get_key({_level_name}, "g_eq")
+        set {_num_curr_players} to size of {_ready_players::*}
+        loop {_players::*}:
+            set {_player_name} to loop-value-2
+            set {_player} to {_player_name} parsed as player
+            set {_prefix} to "<%{@red}%>%{_num_curr_players}%/%{_min_players}%"
+            set {_text} to "<%{@green}%><bold>Ready"
+            set {_bar} to format_message({_prefix}, {_text})
+            send action bar {_bar} to {_player}
 
         # Check enough players...
-        set {_min_players} to get_key({_level_name}, "g_eq")
-        set {_min_players} to 1
-        set {_num_curr_players} to size of {_ready_players::*}
+        set {_serialized} to {_dict}.serialize()
+        set {level::%{_level_name}%::metadata} to {_serialized}
         if {_num_curr_players} is greater than or equal to {_min_players}:
             broadcast "Can start up game..."
 

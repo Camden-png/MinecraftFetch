@@ -1,0 +1,29 @@
+# === Glow ===
+
+import:
+    org.bukkit.Bukkit
+    org.bukkit.potion.PotionEffect
+    org.bukkit.potion.PotionEffectType
+
+function _apply_effect(player: player, effect: text):
+    set {_name} to uppercase {_effect}
+    set {_type} to PotionEffectType.getByName({_name})
+    set {_potion} to new PotionEffect({_type}, 1728000, 1, false, false)
+    {_player}.addPotionEffect({_potion})
+
+function _remove_effect(player: player, effect: text):
+    set {_name} to uppercase {_effect}
+    set {_type} to PotionEffectType.getByName({_name})
+    {_player}.removePotionEffect({_type})
+
+function apply_glow(player: player):
+    _apply_effect({_player}, "glowing")
+
+function remove_glow(player: player):
+    _remove_effect({_player}, "glowing")
+
+function apply_invisibility(player: player):
+    _apply_effect({_player}, "invisibility")
+
+function remove_invisibility(player: player):
+    _remove_effect({_player}, "invisibility")

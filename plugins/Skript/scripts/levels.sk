@@ -129,6 +129,9 @@ function _join(player: player, level_name: text):
     set {_z} to {_location}.get("z")
     _tp({_player}, {_x}, {_y}, {_z})
 
+    # Remove invisibility...
+    remove_invisibility({_player})
+
     # Update level status...
     set {_status} to get_key({_level_name}, "status")
     if is_null({_status}) is true:
