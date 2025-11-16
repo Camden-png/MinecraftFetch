@@ -78,9 +78,7 @@ every 5 ticks:
         loop {_players::*}:
             set {_player_name} to loop-value-2
             set {_player} to {_player_name} parsed as player
-            set {_prefix} to "<%{@red}%>%{_num_curr_players}%/%{_min_players}%"
-            set {_text} to "<%{@green}%><bold>Ready"
-            set {_bar} to format_message({_prefix}, {_text})
+            set {_bar} to "<%{@red}%>%{_num_curr_players}%/%{_min_players}% ready"
             send action bar {_bar} to {_player}
 
         # Check enough players...

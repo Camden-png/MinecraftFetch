@@ -32,8 +32,12 @@ function _reset_player(player: player, hard: boolean = true):
 
     # Unset glow for all players...
     loop players:
+        # Remove player as a viewer from all those online
+        Glow.unsetGlow(loop-player, {_player})
+        # Remove all viewers from player
         Glow.unsetGlow({_player}, loop-player)
 
+    # Make invisible & hide any player count action bar...
     apply_invisibility({_player})
     send action bar "" to {_player}
 
@@ -54,6 +58,13 @@ function init_player(player: player):
     {_dict}.put("status", {@menu_enum})
     {_dict}.put("is_ready", false)
     {_dict}.put("has_bone", false)
+
+    set {_glow_dict} to new Dict()
+    {_glow_dict}.put("pattern", "white")
+    {_glow_dict}.put("index", 0)
+    {_glow_dict}.put("epoch", null)
+    {_dict}.put("glow", {_glow_dict})
+
     if {_player} is op:
         {_dict}.put("mode", {@user_enum})
 
