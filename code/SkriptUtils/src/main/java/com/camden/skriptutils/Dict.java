@@ -37,7 +37,7 @@ public class Dict {
             printer.indentArraysWith(new DefaultIndenter("  ", "\n"));
             return mapper.writer(printer).writeValueAsString(map);
         } catch (Exception ex) {
-            System.err.println(
+            LoggerUtil.getLogger().warning(
                 format("Dict serialization failed: '{0}'", ex.getMessage())
             );
         }
@@ -52,7 +52,7 @@ public class Dict {
             dict.map.putAll(data);
             return dict;
         } catch (Exception ex) {
-            System.err.println(
+            LoggerUtil.getLogger().warning(
                 format("Dict deserialization failed: '{0}'", ex.getMessage())
             );
         }

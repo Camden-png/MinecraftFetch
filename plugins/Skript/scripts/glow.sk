@@ -1,0 +1,10 @@
+import:
+    com.camden.skriptutils.Glow
+
+command /glow:
+    trigger:
+        Glow.setGlow(player, player, "red")
+
+command /unglow:
+    trigger:
+        Glow.unsetGlow(player, player)

@@ -106,7 +106,7 @@ on tool change:
 
 # === Commands ===
 
-function _leave(player: player, y_offset: number = 0):
+function _leave(player: player):
     if in_game({_player}) is false:
         set {_message} to format_message("Error", "You are not in a game!", {@red})
         send {_message} to {_player}
@@ -117,7 +117,7 @@ function _leave(player: player, y_offset: number = 0):
     _remove_player({_player}, {_level_name})
 
     if {_player} is online:
-        _reset_player({_player}, true, {_y_offset})  # Hard
+        _reset_player({_player}, true)  # Hard...
         set {_message} to format_message("Fetch", "You left a game!", {@green})
         send {_message} to {_player}
 
@@ -136,20 +136,15 @@ on rightclick holding an ender pearl:
         _leave(player)
         cancel event
 
-command /spawn [<text>]:
+command /spawn:
     trigger:
-        set {_y_offset} to 0
-        if player is op:
-            if arg-1 is "debug":
-                set {_y_offset} to 4
-
         if in_game(player) is true:
-            _leave(player, {_y_offset})
+            _leave(player)
             stop
         
         set {_message} to format_message("TP", "Teleported...", {@green})
         send {_message} to player
-        tp_to_spawn(player, {_y_offset})
+        tp_to_spawn(player)
 
 # === Edge-cases ===
 

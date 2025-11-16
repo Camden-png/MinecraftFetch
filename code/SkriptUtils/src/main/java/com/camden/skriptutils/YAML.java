@@ -6,6 +6,8 @@ import java.io.File;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import static java.text.MessageFormat.format;
+
 public class YAML {
     private static final ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
 
@@ -18,6 +20,9 @@ public class YAML {
             File yamlFile = new File(yamlDir, yamlName);
 
             if (!yamlFile.exists()) {
+                LoggerUtil.getLogger().warning(
+                    format("Error: 'YAML {0} does not exist!'", yamlName)
+                );
                 return new Dict();
             }
 
@@ -28,7 +33,10 @@ public class YAML {
             dict.putAll(yamlData);
             return dict;
         } catch (Exception ex) {
-            return null;
+            LoggerUtil.getLogger().warning(
+                format("Error: '{0}'", ex.getMessage())
+            );
         }
+        return new Dict();
     }
 }

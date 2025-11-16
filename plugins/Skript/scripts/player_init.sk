@@ -1,8 +1,9 @@
 # === Player Initialization ===
 
 import:
-    com.camden.skriptutils.Dict
     com.camden.skriptutils.ApplyPotion
+    com.camden.skriptutils.Dict
+    com.camden.skriptutils.Glow
 
 options:
     green: "light green"
@@ -11,7 +12,7 @@ options:
     user_enum: export_user_enum()
 
 # `hard` defaults to true...
-function _reset_player(player: player, hard: boolean = true, y_offset: number = 0):
+function _reset_player(player: player, hard: boolean = true):
     if {_hard} is true:
         set_key({_player}, "level_name", null)
         set_key({_player}, "status", {@menu_enum})
@@ -24,16 +25,20 @@ function _reset_player(player: player, hard: boolean = true, y_offset: number = 
         set_key({_player}, "prev_gm", null)
 
     # Remove effects...
-    set {_effects_list} to ApplyPotion.getEffects("%{_player}%")
+    set {_effects_list} to ApplyPotion.getEffects({_player})
     set {_effects::*} to convert_to_skript_list({_effects_list})
     loop {_effects::*}:
         _remove_effect({_player}, loop-value)
+
+    # Unset glow for all players...
+    loop players:
+        Glow.unsetGlow({_player}, loop-player)
 
     apply_invisibility({_player})
     send action bar "" to {_player}
 
     clear inventory of {_player}
-    tp_to_spawn({_player}, {_y_offset})
+    tp_to_spawn({_player})
 
 function init_player(player: player):
     if {game::%{_player}%::metadata} is set:

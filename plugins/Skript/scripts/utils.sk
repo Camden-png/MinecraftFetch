@@ -123,11 +123,10 @@ function _tp(player: player, x: number, y: number, z: number, yaw: object = null
 
     teleport {_player} to {_location}
 
-function tp_to_spawn(player: player, y_offset: number = 0):
+function tp_to_spawn(player: player):
     set {_split::*} to {@spawn} split at ", "
     set {_x} to {_split::1} parsed as number
     set {_y} to {_split::2} parsed as number
-    set {_y} to {_y} + {_y_offset}
     set {_z} to {_split::3} parsed as number
     _tp({_player}, {_x}, {_y}, {_z})
 

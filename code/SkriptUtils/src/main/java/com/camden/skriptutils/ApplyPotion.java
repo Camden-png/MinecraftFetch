@@ -2,14 +2,13 @@ package com.camden.skriptutils;
 
 import java.util.List;
 import java.util.ArrayList;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
-public class ApplyPotion {
-    public static List<String> getEffects(String playerName) {
-        try {
-            Player player = Bukkit.getPlayerExact(playerName);
+import static java.text.MessageFormat.format;
 
+public class ApplyPotion {
+    public static List<String> getEffects(Player player) {
+        try {
             List<String> idList = new ArrayList<>();
             player.getActivePotionEffects().forEach(effect -> {
                 String id = effect.getType().getKey().getKey();
@@ -18,7 +17,10 @@ public class ApplyPotion {
 
             return idList;
         } catch (Exception ex) {
-            return new ArrayList<>();
+            LoggerUtil.getLogger().warning(
+                format("Error: '{0}'", ex.getMessage())
+            );
         }
+        return new ArrayList<>();
     }
 }
