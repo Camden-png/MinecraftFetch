@@ -45,8 +45,9 @@ command /debug [<text>]:
 
         if arg-1 is set:
             set {_target} to arg-1
-            if {game::%{_target}%::metadata} is set:
-                set {_metadata} to {game::%{_target}%::metadata}
+            set {_player} to {_target} parsed as player
+            if {game::%{_player}%::metadata} is set:
+                set {_metadata} to {game::%{_player}%::metadata}
             else if {level::%{_target}%::metadata} is set:
                 set {_metadata} to {level::%{_target}%::metadata}
                 set {_target} to "%{_target}% level"

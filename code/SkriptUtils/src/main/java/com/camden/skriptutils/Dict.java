@@ -2,6 +2,7 @@ package com.camden.skriptutils;
 
 import com.fasterxml.jackson.core.util.DefaultIndenter;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
+import com.fasterxml.jackson.core.util.Separators;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -30,8 +31,18 @@ public class Dict {
         return new ArrayList<>(map.keySet());
     }
 
-    public String serialize() {
+    public String serialize(boolean pretty) {
         try {
+            if (!pretty) {
+                DefaultPrettyPrinter printer = new DefaultPrettyPrinter(
+                    Separators.createDefaultInstance()
+                        .withObjectFieldValueSpacing(Separators.Spacing.AFTER)
+                        .withObjectEntrySpacing(Separators.Spacing.AFTER)
+                );
+                printer.indentObjectsWith(new DefaultIndenter("", ""));
+                printer.indentArraysWith(new DefaultIndenter("", ""));
+                return mapper.writer(printer).writeValueAsString(map);
+            }
             DefaultPrettyPrinter printer = new DefaultPrettyPrinter();
             printer.indentObjectsWith(new DefaultIndenter("  ", "\n"));
             printer.indentArraysWith(new DefaultIndenter("  ", "\n"));
@@ -42,6 +53,10 @@ public class Dict {
             );
         }
         return null;
+    }
+
+    public String serialize() {
+        return serialize(true);
     }
 
     public static Dict deserialize(String jsonString) {

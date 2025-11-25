@@ -63,7 +63,8 @@ function init_player(player: player):
     {_glow_dict}.put("pattern", "white")
     {_glow_dict}.put("index", 0)
     {_glow_dict}.put("epoch", null)
-    {_dict}.put("glow", {_glow_dict})
+    set {_serialized_glow_dict} to {_glow_dict}.serialize(false)
+    {_dict}.put("glow", {_serialized_glow_dict})
 
     if {_player} is op:
         {_dict}.put("mode", {@user_enum})
