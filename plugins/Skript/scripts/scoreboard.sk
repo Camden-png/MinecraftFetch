@@ -50,9 +50,9 @@ function set_color(object: object, colors_dict: text) :: text:
     set {_color} to formatted "<%{_color}%>"
 
     if {_colors_dict} is {@colors_key_dict}:
-        return _join("%{_text}%:", {_color})
+        return join "%{_text}%:" and {_color}
 
-    return _join({_color}, {_text})
+    return join {_color} and {_text}
 
 function set_scoreboard(player: player):
     set {_metadata} to {game::%{_player}%::metadata}
@@ -61,6 +61,7 @@ function set_scoreboard(player: player):
     if {_mode} is not "user":
         set {_metadata} to {level::%{_mode}%::metadata}
 
+    # Do not use `get_key(...)` here...
     set {_dict} to Dict.deserialize({_metadata})
     set {_keys::*} to get_keys_from_metadata({_metadata})
 

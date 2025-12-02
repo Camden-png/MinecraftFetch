@@ -50,7 +50,7 @@ every 5 ticks:
         set {_players_list} to get_key({_level_name}, "players")
         set {_players::*} to convert_to_skript_list({_players_list})  # Conver to Skript...
 
-        # Avoid unlikely race condition...
+        # TODO: move to `on tool change`
         clear {_ready_players::*}  # Skript...
         loop {_players::*}:
             set {_player} to loop-value-2
@@ -61,17 +61,14 @@ every 5 ticks:
             if {_is_ready} is true:
                 add {_player_name} to {_ready_players::*}
 
-        set {_metadata} to {level::%{_level_name}%::metadata}
-        set {_dict} to Dict.deserialize({_metadata})
-        set {_ready_players_list} to {_dict}.get("ready_players")
-
-        {_ready_players_list}.clear()
+        set {_ready_players_list} to get_key({_level_name}, "ready_players")
+        {_ready_players_list}.clear()  # Can be optimized...
 
         loop {_ready_players::*}:  # Cannot use `addAll(...)`...
             set {_player_name} to loop-value-2
             {_ready_players_list}.add({_player_name})
 
-        {_dict}.put("ready_players", {_ready_players_list})
+        set_key({_level_name}, "ready_players", {_ready_players_list})
 
         set {_min_players} to get_key({_level_name}, "g_eq")
         set {_num_curr_players} to size of {_ready_players::*}
@@ -82,8 +79,6 @@ every 5 ticks:
             send action bar {_bar} to {_player}
 
         # Check enough players...
-        set {_serialized} to {_dict}.serialize()
-        set {level::%{_level_name}%::metadata} to {_serialized}
         if {_num_curr_players} is greater than or equal to {_min_players}:
             broadcast "Can start up game..."
 

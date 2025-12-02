@@ -27,6 +27,10 @@ public class Dict {
         return map.get(key);
     }
 
+    public Object get(String key, Object _default) {
+        return map.getOrDefault(key, _default);
+    }
+
     public List<String> getKeys() {
         return new ArrayList<>(map.keySet());
     }

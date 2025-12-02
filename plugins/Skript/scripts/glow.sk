@@ -1,34 +1,20 @@
 import:
     com.camden.skriptutils.Dict
     com.camden.skriptutils.Glow
+    com.camden.skriptutils.Utils
 
 options:
     trans_colors: "aqua, light purple, white"  # Blue, pink, white...
 
-# set {_serialized_glow_dict} to {_dict}.get("glow")
-# set {_glow_dict} to Dict.deserialize({_serialized_glow_dict})
-# {_dict}.put("glow", {_glow_dict})
-
-function tester(player: player) :: object:
-    set {_metadata} to {game::%{_player}%::metadata}
-    set {_dict} to Dict.deserialize({_metadata})
-    return {_dict}
-
-function _recurse_update(player: player, key: text, value: object):
+function _recurse_update(dict: object, key: text, val: object) :: object:
     set {_split::*} to {_key} split at "."
-    set {_k} to first element of {_split::*}
-
-    # Deserialize Dict...
-    set {_metadata} to {game::%{_player}%::metadata}
-    set {_dict} to Dict.deserialize({_metadata})
+    set {_k} to {_split::1}
 
     # If length == 1...
     set {_length} to size of {_split::*}
     if {_length} is 1:
-        {_dict}.put({_k}, {_value})
-        set {_serialized} to {_dict}.serialize()
-        set {game::%{_player}%::metadata} to {_serialized}
-        stop
+        {_dict}.put({_k}, {_val})
+        return {_dict}
 
     # Emulate Python's maxsplit=1...
     set {_rest} to ""
@@ -37,29 +23,35 @@ function _recurse_update(player: player, key: text, value: object):
         if {_index} is 1:
             continue
 
-        clear {_suffix::*}
-        if {_rest} is empty:
-            set {_suffix::*} to loop-value
-        else:
-            set {_suffix::*} to "." and loop-value
-        set {_rest} to join {_rest} and {_suffix::*} 
+        set {_suffix} to loop-value
+        if {_rest} is not empty:
+            set {_suffix} to join "." and loop-value
+        set {_rest} to join {_rest} and {_suffix}
 
-    # _recurse_update(a_dict[_key], rest, value)
+    set {_default} to new Dict()
+    set {_serialized_inner_dict} to {_dict}.get({_k}, {_default})
+    set {_inner_dict} to Dict.deserialize({_serialized_inner_dict})
+    set {_inner_dict} to _recurse_update({_inner_dict}, {_rest}, {_val})
+    set {_serialized_inner_dict} to {_inner_dict}.serialize(false)
+    {_dict}.put({_k}, {_serialized_inner_dict})
+    return {_dict}
 
-function set_key_v2(player: player, key: text, value: object):
-    _recurse_update({_player}, {_key}, {_value})
+# TODO: replace `set_key`
+function set_key_v2(player: player, key: text, val: object):
+    set {_metadata} to {game::%{_player}%::metadata}
+    set {_dict} to Dict.deserialize({_metadata})
+    set {_dict} to _recurse_update({_dict}, {_key}, {_val})
+    set {_serialized} to {_dict}.serialize()
+    set {game::%{_player}%::metadata} to {_serialized}
 
 command /glow:
     trigger:
         set {_colors::*} to {@trans_colors} split at ", "        
-
-        # broadcast "%{_colors::*}%"
-        # set_key_v2(player, "has_bone", true)
-        # set_key_v2(player, "glow.index", 1)  # 0-based...
-        # Glow.setGlow(player, player, "red")
-        set {_dict} to tester(player)
-        broadcast "%{_dict}%"
+        set_key_v2(player, "glow.index", 1)
+        set {_now} to Utils.getEpoch()
+        set_key_v2(player, "glow.epoch", {_now})
 
 command /unglow:
     trigger:
+        # TODO: loop through all receivers...
         Glow.unsetGlow(player, player)

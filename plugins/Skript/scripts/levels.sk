@@ -47,23 +47,15 @@ on load:
             _reset_player(loop-player)
     init_levels()
 
-function _add_player(player: player, level_name: text, key: text = "players"):
-    set {_metadata} to {level::%{_level_name}%::metadata}
-    set {_dict} to Dict.deserialize({_metadata})
-    set {_players_list} to {_dict}.get({_key})
+function _add_player(player: player, level_name: text):
+    set {_players_list} to get_key({_level_name}, "players")
     {_players_list}.add("%{_player}%")  # Convert to string...
-    {_dict}.put({_key}, {_players_list})
-    set {_serialized} to {_dict}.serialize()
-    set {level::%{_level_name}%::metadata} to {_serialized}
+    set_key({_level_name}, "players", {_players_list})
 
-function _remove_player(player: player, level_name: text, key: text = "players"):
-    set {_metadata} to {level::%{_level_name}%::metadata}
-    set {_dict} to Dict.deserialize({_metadata})
-    set {_players_list} to {_dict}.get({_key})
+function _remove_player(player: player, level_name: text):
+    set {_players_list} to get_key({_level_name}, "players")
     {_players_list}.remove("%{_player}%")  # Convert to string...
-    {_dict}.put({_key}, {_players_list})
-    set {_serialized} to {_dict}.serialize()
-    set {level::%{_level_name}%::metadata} to {_serialized}
+    set_key({_level_name}, "players", {_players_list})
 
 # Returns (success status (bool), message (text))
 function _join_level(player: player, level_name: text) :: objects:

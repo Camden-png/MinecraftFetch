@@ -51,19 +51,26 @@ function get_keys_from_metadata(metadata: text) :: texts:
     set {_keys::*} to convert_to_skript_list({_keys_list})
     return {_keys::*}
 
-function get_key(target: object, key: text) :: object:
-    clear {_prefix}
+function _util_key(target: object) :: objects:
     set {_stop} to true
+    clear {_prefix}
 
     if {game::%{_target}%::metadata} is set:
         set {_prefix} to "game"
         set {_stop} to false
-    else:
-        set {_target} to "%{_target}%"  # Convert to string...
 
+    set {_target} to "%{_target}%"  # Convert to string...
     if {level::%{_target}%::metadata} is set:
         set {_prefix} to "level"
         set {_stop} to false
+    
+    set {_returns::*} to {_stop} and {_prefix}
+    return {_returns::*}
+
+function get_key(target: object, key: text) :: object:
+    set {_tuple::*} to _util_key({_target})
+    set {_stop} to {_tuple::1}
+    set {_prefix} to {_tuple::2}
 
     # Edge-case: not set...
     if {_stop} is true:
@@ -73,33 +80,23 @@ function get_key(target: object, key: text) :: object:
     set {_dict} to Dict.deserialize({_metadata})
     return {_dict}.get({_key})
 
-function set_key(target: object, key: text, value: object):
-    clear {_prefix}  # Duplicate logic...
-    set {_stop} to true
-
-    # Is player...
-    if {game::%{_target}%::metadata} is set:
-        set {_prefix} to "game"
-        set {_stop} to false
-    else:
-        set {_target} to "%{_target}%"  # Convert to string...
-
-    if {level::%{_target}%::metadata} is set:
-        set {_prefix} to "level"
-        set {_stop} to false
+function set_key(target: object, key: text, val: object):
+    set {_tuple::*} to _util_key({_target})
+    set {_stop} to {_tuple::1}
+    set {_prefix} to {_tuple::2}
 
     # Edge-case: not set...
     if {_stop} is true:
         stop
 
     # Edge-case: Skript stringified null...
-    if is_null({_value}) is true:
-        set {_value} to null
+    if is_null({_val}) is true:
+        set {_val} to null
 
     set {_metadata} to {%{_prefix}%::%{_target}%::metadata}
     set {_dict} to Dict.deserialize({_metadata})
 
-    {_dict}.put({_key}, {_value})
+    {_dict}.put({_key}, {_val})
     set {_serialized} to {_dict}.serialize()
     set {%{_prefix}%::%{_target}%::metadata} to {_serialized}
 
