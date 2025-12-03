@@ -4,6 +4,7 @@ import:
     com.camden.skriptutils.ApplyPotion
     com.camden.skriptutils.Dict
     com.camden.skriptutils.Glow
+    com.camden.skriptutils.Utils
 
 options:
     green: "light green"
@@ -61,10 +62,10 @@ function init_player(player: player):
 
     set {_glow_dict} to new Dict()
     {_glow_dict}.put("pattern", "white")
+    {_glow_dict}.put("colors", Utils.createEmptyList())
     {_glow_dict}.put("index", 0)
-    {_glow_dict}.put("epoch", null)
-    set {_serialized_glow_dict} to {_glow_dict}.serialize(false)
-    {_dict}.put("glow", {_serialized_glow_dict})
+    {_glow_dict}.put("epoch_time", null)
+    {_dict}.put("glow", {_glow_dict}.getMap())
 
     if {_player} is op:
         {_dict}.put("mode", {@user_enum})

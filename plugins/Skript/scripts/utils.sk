@@ -12,6 +12,7 @@ options:
     lobby_enum: "lobby"
     in_game_enum: "in_game"
     user_enum: "user"
+    unset: "___unset___"  # Special! Used to signify difference from `null`
 
 # === Exports ===
 
@@ -67,7 +68,58 @@ function _util_key(target: object) :: objects:
     set {_returns::*} to {_stop} and {_prefix}
     return {_returns::*}
 
-function get_key(target: object, key: text) :: object:
+# Emulate's Python's maxsplit=1...
+function _get_rest(split: texts) :: text:
+    set {_rest} to ""
+    loop {_split::*}:
+        set {_index} to loop-index parsed as number
+        if {_index} is 1:
+            continue
+
+        set {_suffix} to loop-value
+        if {_rest} is not empty:
+            set {_suffix} to join "." and loop-value
+        set {_rest} to join {_rest} and {_suffix}
+
+    return {_rest}
+
+function _recurse_get(dict: object, key: text, default: object) :: object:
+    set {_split::*} to {_key} split at "."
+    set {_k} to {_split::1}
+
+    # If length == 1...
+    set {_length} to size of {_split::*}
+    if {_length} is 1:
+        if {_default} is {@unset}:
+            return {_dict}.get({_k})
+        # Technically could be a `LinkedHashMap`
+        return {_dict}.getOrDefault({_k}, {_default})
+
+    # Recurse into inner `LinkedHashMap`
+    set {_inner_dict} to {_dict}.get({_k})
+    set {_rest} to _get_rest({_split::*})
+    return _recurse_get({_inner_dict}, {_rest}, {_default})
+
+function _recurse_set(dict: object, key: text, val: object) :: object:
+    set {_split::*} to {_key} split at "."
+    set {_k} to {_split::1}  # Exception if size is 0?
+
+    # If length == 1...
+    set {_length} to size of {_split::*}
+    if {_length} is 1:
+        {_dict}.put({_k}, {_val})
+        return {_dict}
+
+    # Technically a `LinkedHashMap`
+    set {_inner_dict} to {_dict}.get({_k})  # Exception if key does not exist?
+
+    set {_rest} to _get_rest({_split::*})
+    set {_inner_dict} to _recurse_set({_inner_dict}, {_rest}, {_val})
+
+    {_dict}.put({_k}, {_inner_dict})
+    return {_dict}
+
+function get_key(target: object, key: text, default: object = {@unset}) :: object:
     set {_tuple::*} to _util_key({_target})
     set {_stop} to {_tuple::1}
     set {_prefix} to {_tuple::2}
@@ -78,7 +130,7 @@ function get_key(target: object, key: text) :: object:
 
     set {_metadata} to {%{_prefix}%::%{_target}%::metadata}
     set {_dict} to Dict.deserialize({_metadata})
-    return {_dict}.get({_key})
+    return _recurse_get({_dict}, {_key}, {_default})
 
 function set_key(target: object, key: text, val: object):
     set {_tuple::*} to _util_key({_target})
@@ -95,8 +147,7 @@ function set_key(target: object, key: text, val: object):
 
     set {_metadata} to {%{_prefix}%::%{_target}%::metadata}
     set {_dict} to Dict.deserialize({_metadata})
-
-    {_dict}.put({_key}, {_val})
+    set {_dict} to _recurse_set({_dict}, {_key}, {_val})
     set {_serialized} to {_dict}.serialize()
     set {%{_prefix}%::%{_target}%::metadata} to {_serialized}
 

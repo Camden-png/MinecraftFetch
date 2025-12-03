@@ -1,4 +1,6 @@
-# === Glow ===
+# === Effects ===
+
+# TODO: fully move to ApplyPotion...
 
 import:
     org.bukkit.Bukkit

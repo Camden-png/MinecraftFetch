@@ -1,2 +1,2 @@
-java -Xmx512M -Xms512M -jar paper.jar nogui
+java -Xmx512M -Xms512M -jar -DIReallyKnowWhatIAmDoingISwear paper.jar nogui
 Pause

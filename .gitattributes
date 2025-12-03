@@ -1,2 +1,3 @@
-*.sk linguist-language=Text
+*.sk linguist-language=YAML
 *.sk linguist-detectable=true
+*.yaml linguist-detectable=true

@@ -4,52 +4,39 @@ import:
     com.camden.skriptutils.Utils
 
 options:
-    trans_colors: "aqua, light purple, white"  # Blue, pink, white...
+    patterns_dict: _create_patterns_dict()
 
-function _recurse_update(dict: object, key: text, val: object) :: object:
-    set {_split::*} to {_key} split at "."
-    set {_k} to {_split::1}
-
-    # If length == 1...
-    set {_length} to size of {_split::*}
-    if {_length} is 1:
-        {_dict}.put({_k}, {_val})
-        return {_dict}
-
-    # Emulate Python's maxsplit=1...
-    set {_rest} to ""
-    loop {_split::*}:
-        set {_index} to loop-index parsed as number
-        if {_index} is 1:
-            continue
-
-        set {_suffix} to loop-value
-        if {_rest} is not empty:
-            set {_suffix} to join "." and loop-value
-        set {_rest} to join {_rest} and {_suffix}
-
-    set {_default} to new Dict()
-    set {_serialized_inner_dict} to {_dict}.get({_k}, {_default})
-    set {_inner_dict} to Dict.deserialize({_serialized_inner_dict})
-    set {_inner_dict} to _recurse_update({_inner_dict}, {_rest}, {_val})
-    set {_serialized_inner_dict} to {_inner_dict}.serialize(false)
-    {_dict}.put({_k}, {_serialized_inner_dict})
-    return {_dict}
-
-# TODO: replace `set_key`
-function set_key_v2(player: player, key: text, val: object):
-    set {_metadata} to {game::%{_player}%::metadata}
-    set {_dict} to Dict.deserialize({_metadata})
-    set {_dict} to _recurse_update({_dict}, {_key}, {_val})
+function _create_patterns_dict() :: text:
+    set {_dict} to new Dict()
+    {_dict}.put("white", "white")
+    # Blue, pink, white...
+    {_dict}.put("trans", "aqua, light purple, white")
     set {_serialized} to {_dict}.serialize()
-    set {game::%{_player}%::metadata} to {_serialized}
+    return {_serialized}
 
 command /glow:
     trigger:
-        set {_colors::*} to {@trans_colors} split at ", "        
-        set_key_v2(player, "glow.index", 1)
-        set {_now} to Utils.getEpoch()
-        set_key_v2(player, "glow.epoch", {_now})
+        # TODO: move to inventory button player clicks...
+        # TODO: add cycling logic...
+        set {_key} to "trans"
+
+        set {_dict} to Dict.deserialize({@patterns_dict})
+        set {_colors} to {_dict}.get({_key}, null)
+        if is_null({_colors}) is true:
+            set {_key} to "unknown"
+            set {_colors} to "white"
+
+        set {_colors::*} to {_colors} split at ", "
+        set {_length} to size of {_colors::*}
+
+        set_key(player, "glow.pattern", {_key}) 
+        set_key(player, "glow.colors", Utils.createSplitCommaList({_colors}))
+        set_key(player, "glow.index", 0)  # Reset to 0...
+
+        set {_now} to null
+        if {_length} is greater than or equal to 2:
+            set {_now} to Utils.getEpochTime()
+        set_key(player, "glow.epoch_time", {_now})
 
 command /unglow:
     trigger:

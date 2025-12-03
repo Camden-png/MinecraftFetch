@@ -15,6 +15,10 @@ public class Dict {
     private static final ObjectMapper mapper = new ObjectMapper();
     private final Map<String, Object> map = new LinkedHashMap<>();
 
+    public Map<String, Object> getMap() {
+        return map;
+    }
+
     public void put(String key, Object value) {
         map.put(key, value);
     }
@@ -27,7 +31,12 @@ public class Dict {
         return map.get(key);
     }
 
+    // Allow Python-like `get(...)` but also Java's syntax...
     public Object get(String key, Object _default) {
+        return map.getOrDefault(key, _default);
+    }
+
+    public Object getOrDefault(String key, Object _default) {
         return map.getOrDefault(key, _default);
     }
 

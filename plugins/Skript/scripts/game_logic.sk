@@ -1,12 +1,13 @@
 # === Game Logic ===
 
+import:
+    com.camden.skriptutils.Dict
+    com.camden.skriptutils.Utils
+
 options:
     green: "light green"
     red: "light red"
     lobby_enum: export_lobby_enum()
-
-import:
-    com.camden.skriptutils.Dict
 
 function check_has_bone(player: player):
     set {_has_bone} to false
@@ -22,6 +23,7 @@ function check_has_bone(player: player):
     set_key({_player}, "has_bone", {_has_bone})
 
     # Apply / remove glow
+    # TODO: switch to new glow logic...
     if {_has_bone} is true:
         apply_glow({_player})
     else:
@@ -61,8 +63,7 @@ every 5 ticks:
             if {_is_ready} is true:
                 add {_player_name} to {_ready_players::*}
 
-        set {_ready_players_list} to get_key({_level_name}, "ready_players")
-        {_ready_players_list}.clear()  # Can be optimized...
+        set {_ready_players_list} to Utils.createEmptyList()
 
         loop {_ready_players::*}:  # Cannot use `addAll(...)`...
             set {_player_name} to loop-value-2
