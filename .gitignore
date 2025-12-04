@@ -7,6 +7,7 @@
 cache/
 config/
 logs/
+crash-reports/
 *.jar
 help.yml
 bukkit.yml
@@ -20,6 +21,7 @@ banned*.json
 usercache.json
 version_history.json
 whitelist.json
+server.log
 
 plugins/*
 !plugins/levels/
