@@ -1,7 +1,8 @@
 # === Utils ===
 
 import:
-    com.camden.skriptutils.Dict
+    java.util.LinkedHashMap
+    com.camden.skriptutils.Utils
 
 # === Universal Constants ===
 
@@ -47,8 +48,8 @@ function convert_to_skript_list(list: object) :: texts:
     return {_split::*}
 
 function get_keys_from_metadata(metadata: text) :: texts:
-    set {_dict} to Dict.deserialize({_metadata})
-    set {_keys_list} to {_dict}.getKeys()
+    set {_dict} to Utils.deserialize({_metadata})
+    set {_keys_list} to Utils.getKeys({_dict})
     set {_keys::*} to convert_to_skript_list({_keys_list})
     return {_keys::*}
 
@@ -92,7 +93,6 @@ function _recurse_get(dict: object, key: text, default: object) :: object:
     if {_length} is 1:
         if {_default} is {@unset}:
             return {_dict}.get({_k})
-        # Technically could be a `LinkedHashMap`
         return {_dict}.getOrDefault({_k}, {_default})
 
     # Recurse into inner `LinkedHashMap`
@@ -110,7 +110,6 @@ function _recurse_set(dict: object, key: text, val: object) :: object:
         {_dict}.put({_k}, {_val})
         return {_dict}
 
-    # Technically a `LinkedHashMap`
     set {_inner_dict} to {_dict}.get({_k})  # Exception if key does not exist?
 
     set {_rest} to _get_rest({_split::*})
@@ -129,7 +128,7 @@ function get_key(target: object, key: text, default: object = {@unset}) :: objec
         stop
 
     set {_metadata} to {%{_prefix}%::%{_target}%::metadata}
-    set {_dict} to Dict.deserialize({_metadata})
+    set {_dict} to Utils.deserialize({_metadata})
     return _recurse_get({_dict}, {_key}, {_default})
 
 function set_key(target: object, key: text, val: object):
@@ -146,9 +145,9 @@ function set_key(target: object, key: text, val: object):
         set {_val} to null
 
     set {_metadata} to {%{_prefix}%::%{_target}%::metadata}
-    set {_dict} to Dict.deserialize({_metadata})
+    set {_dict} to Utils.deserialize({_metadata})
     set {_dict} to _recurse_set({_dict}, {_key}, {_val})
-    set {_serialized} to {_dict}.serialize()
+    set {_serialized} to Utils.serialize({_dict})
     set {%{_prefix}%::%{_target}%::metadata} to {_serialized}
 
 function format_message(prefix: text, message: text, color: text = "white", square_brackets: boolean = true) :: text:

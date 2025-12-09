@@ -1,8 +1,7 @@
 # === Player Initialization ===
 
 import:
-    com.camden.skriptutils.ApplyPotion
-    com.camden.skriptutils.Dict
+    java.util.LinkedHashMap
     com.camden.skriptutils.Glow
     com.camden.skriptutils.Utils
 
@@ -26,10 +25,7 @@ function _reset_player(player: player, hard: boolean = true):
         set_key({_player}, "prev_gm", null)
 
     # Remove effects...
-    set {_effects_list} to ApplyPotion.getEffects({_player})
-    set {_effects::*} to convert_to_skript_list({_effects_list})
-    loop {_effects::*}:
-        _remove_effect({_player}, loop-value)
+    remove_effects({_player} parsed as player)  # Multiple overloads, force mine...
 
     # Unset glow for all players...
     loop players:
@@ -49,7 +45,7 @@ function init_player(player: player):
     if {game::%{_player}%::metadata} is set:
         _reset_player({_player}, false)
 
-    set {_dict} to new Dict()
+    set {_dict} to new LinkedHashMap()
     set {_is_dev} to false
     if {_player} is op:
         set {_is_dev} to true
@@ -60,17 +56,17 @@ function init_player(player: player):
     {_dict}.put("is_ready", false)
     {_dict}.put("has_bone", false)
 
-    set {_glow_dict} to new Dict()
+    set {_glow_dict} to new LinkedHashMap()
     {_glow_dict}.put("pattern", "white")
     {_glow_dict}.put("colors", Utils.createEmptyList())
     {_glow_dict}.put("index", 0)
     {_glow_dict}.put("epoch_time", null)
-    {_dict}.put("glow", {_glow_dict}.getMap())
+    {_dict}.put("glow", {_glow_dict})
 
     if {_player} is op:
         {_dict}.put("mode", {@user_enum})
 
-    set {_serialized} to {_dict}.serialize()
+    set {_serialized} to Utils.serialize({_dict})
     set {game::%{_player}%::metadata} to {_serialized}
 
 # === Connect / Disconnect ===
@@ -84,22 +80,14 @@ on quit:
     set {_message} to format_message("Logout", "%player% logged out!", "orange")
     set quit message to {_message}
 
-function _is_null(player: player) :: boolean:
-    set {_status} to get_key({_player}, "status")
-    return is_null({_status})
-
 # Prevent players from modifying the world...
 on break:
-    if _is_null(player) is true:
-        stop
     if player is op:
         if in_game(player) is false:
             stop
     cancel event
 
 on place:
-    if _is_null(player) is true:
-        stop
     if player is op:
         if in_game(player) is false:
             stop

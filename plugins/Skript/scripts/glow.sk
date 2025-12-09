@@ -1,5 +1,5 @@
 import:
-    com.camden.skriptutils.Dict
+    java.util.LinkedHashMap
     com.camden.skriptutils.Glow
     com.camden.skriptutils.Utils
 
@@ -7,11 +7,11 @@ options:
     patterns_dict: _create_patterns_dict()
 
 function _create_patterns_dict() :: text:
-    set {_dict} to new Dict()
+    set {_dict} to new LinkedHashMap()
     {_dict}.put("white", "white")
     # Blue, pink, white...
     {_dict}.put("trans", "aqua, light purple, white")
-    set {_serialized} to {_dict}.serialize()
+    set {_serialized} to Utils.serialize({_dict})
     return {_serialized}
 
 command /glow:
@@ -20,8 +20,8 @@ command /glow:
         # TODO: add cycling logic...
         set {_key} to "trans"
 
-        set {_dict} to Dict.deserialize({@patterns_dict})
-        set {_colors} to {_dict}.get({_key}, null)
+        set {_dict} to Utils.deserialize({@patterns_dict})
+        set {_colors} to {_dict}.getOrDefault({_key}, null)
         if is_null({_colors}) is true:
             set {_key} to "unknown"
             set {_colors} to "white"
@@ -30,7 +30,7 @@ command /glow:
         set {_length} to size of {_colors::*}
 
         set_key(player, "glow.pattern", {_key}) 
-        set_key(player, "glow.colors", Utils.createSplitCommaList({_colors}))
+        set_key(player, "glow.colors", Utils.createSplitCommasList({_colors}))
         set_key(player, "glow.index", 0)  # Reset to 0...
 
         set {_now} to null

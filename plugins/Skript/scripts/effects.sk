@@ -1,22 +1,27 @@
 # === Effects ===
 
-# TODO: fully move to ApplyPotion...
-
 import:
     org.bukkit.Bukkit
     org.bukkit.potion.PotionEffect
     org.bukkit.potion.PotionEffectType
+    com.camden.skriptutils.Potions
 
-function _apply_effect(player: player, effect: text):
+function _apply_effect(player: player, effect: text, duration: number = 1728000):
     set {_name} to uppercase {_effect}
     set {_type} to PotionEffectType.getByName({_name})
-    set {_potion} to new PotionEffect({_type}, 1728000, 1, false, false)
+    set {_potion} to new PotionEffect({_type}, {_duration}, 1, false, false)
     {_player}.addPotionEffect({_potion})
 
 function _remove_effect(player: player, effect: text):
     set {_name} to uppercase {_effect}
     set {_type} to PotionEffectType.getByName({_name})
     {_player}.removePotionEffect({_type})
+
+function remove_effects(player: player):
+    set {_effects_list} to Potions.getEffects({_player})
+    set {_effects::*} to convert_to_skript_list({_effects_list})
+    loop {_effects::*}:
+        _remove_effect({_player}, loop-value)
 
 function apply_glow(player: player):
     _apply_effect({_player}, "glowing")

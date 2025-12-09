@@ -7,7 +7,7 @@ lobby_location:
   y: 0
   z: 25.5
 
-dog_house_location:
+crypt_location:
   x: 8.5
   y: 0
   z: 25.5

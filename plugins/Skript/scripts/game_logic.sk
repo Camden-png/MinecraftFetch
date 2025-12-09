@@ -1,13 +1,10 @@
 # === Game Logic ===
 
 import:
-    com.camden.skriptutils.Dict
     com.camden.skriptutils.Utils
 
 options:
     green: "light green"
-    red: "light red"
-    lobby_enum: export_lobby_enum()
 
 function check_has_bone(player: player):
     set {_has_bone} to false
@@ -30,7 +27,7 @@ function check_has_bone(player: player):
         remove_glow({_player})
 
 # Check if player has the bone...
-every 3 ticks:
+every 5 ticks:
     loop all players:
         if in_game(loop-player, true) is true:  # Strict...
             check_has_bone(loop-player)
@@ -39,91 +36,23 @@ every 3 ticks:
         if loop-player is op:
             set_scoreboard(loop-player)
 
-# Check if lobby is ready...
-every 5 ticks:
-    set {_level_names::*} to get_levels()
-    loop {_level_names::*}:
-        set {_level_name} to loop-value
-
-        set {_status} to get_key({_level_name}, "status")
-        if {_status} is not {@lobby_enum}:
-            continue
-
-        set {_players_list} to get_key({_level_name}, "players")
-        set {_players::*} to convert_to_skript_list({_players_list})  # Conver to Skript...
-
-        # TODO: move to `on tool change`
-        clear {_ready_players::*}  # Skript...
-        loop {_players::*}:
-            set {_player} to loop-value-2
-            set {_player} to {_player} parsed as player
-            set {_player_name} to "%{_player}%"
-
-            set {_is_ready} to get_key({_player}, "is_ready")
-            if {_is_ready} is true:
-                add {_player_name} to {_ready_players::*}
-
-        set {_ready_players_list} to Utils.createEmptyList()
-
-        loop {_ready_players::*}:  # Cannot use `addAll(...)`...
-            set {_player_name} to loop-value-2
-            {_ready_players_list}.add({_player_name})
-
-        set_key({_level_name}, "ready_players", {_ready_players_list})
-
-        set {_min_players} to get_key({_level_name}, "g_eq")
-        set {_num_curr_players} to size of {_ready_players::*}
-        loop {_players::*}:
-            set {_player_name} to loop-value-2
-            set {_player} to {_player_name} parsed as player
-            set {_bar} to "<%{@red}%>%{_num_curr_players}%/%{_min_players}% ready"
-            send action bar {_bar} to {_player}
-
-        # Check enough players...
-        if {_num_curr_players} is greater than or equal to {_min_players}:
-            broadcast "Can start up game..."
-
 on tool change:
     if in_lobby(player) is false:
         stop
 
     set {_old_status} to get_key(player, "is_ready")
 
-    set {_is_ready} to false
+    set {_curr_status} to false
     if tool is lime banner:
-        set {_is_ready} to true
+        set {_curr_status} to true
 
-    if {_old_status} is {_is_ready}:
+    if {_old_status} is {_curr_status}:
         stop
 
-    set_key(player, "is_ready", {_is_ready})
+    set_key(player, "is_ready", {_curr_status})
 
-# === Commands ===
-
-function _leave(player: player):
-    if in_game({_player}) is false:
-        set {_message} to format_message("Error", "You are not in a game!", {@red})
-        send {_message} to {_player}
-        stop
-
-    # In game...
-    set {_level_name} to get_key({_player}, "level_name")
-    _remove_player({_player}, {_level_name})
-
-    if {_player} is online:
-        _reset_player({_player}, true)  # Hard...
-        set {_message} to format_message("Fetch", "You left a game!", {@green})
-        send {_message} to {_player}
-
-    # Update level status...
-    set {_players_list} to get_key({_level_name}, "players")
-    set {_length} to {_players_list}.size()
-    if {_length} is 0:
-        set_key({_level_name}, "status", null)
-
-command /leave:
-    trigger:
-        _leave(player)
+    set {_level_name} to get_key(player, "level_name")
+    _update_level_data({_level_name})
 
 on rightclick holding an ender pearl:
     if in_lobby(player) is true:  # ONLY allow in lobby...

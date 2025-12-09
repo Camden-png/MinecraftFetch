@@ -1,17 +1,18 @@
 package com.camden.skriptutils;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import java.io.File;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
 import static java.text.MessageFormat.format;
 
 public class YAML {
     private static final ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
 
-    public static Dict load(String yamlName) {
+    public static Map<String, Object> load(String yamlName) {
         try {
             File jarDir = new File(YAML.class.getProtectionDomain()
                 .getCodeSource().getLocation().toURI()).getParentFile();
@@ -23,20 +24,16 @@ public class YAML {
                 LoggerUtil.getLogger().warning(
                     format("Error: 'YAML {0} does not exist!'", yamlName)
                 );
-                return new Dict();
+                return new LinkedHashMap<>();
             }
-
             @SuppressWarnings("unchecked")
-            Map<String, Object> yamlData = mapper.readValue(yamlFile, LinkedHashMap.class);
-
-            Dict dict = new Dict();
-            dict.putAll(yamlData);
-            return dict;
+            Map<String, Object> map = mapper.readValue(yamlFile, LinkedHashMap.class);
+            return map;
         } catch (Exception ex) {
             LoggerUtil.getLogger().warning(
                 format("Error: '{0}'", ex.getMessage())
             );
         }
-        return new Dict();
+        return new LinkedHashMap<>();
     }
 }

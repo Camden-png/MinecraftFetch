@@ -1,6 +1,6 @@
 import:
-    com.camden.skriptutils.Dict
     com.camden.skriptutils.Slot
+    com.camden.skriptutils.Utils
     com.camden.skriptutils.YAML
 
 options:
@@ -14,9 +14,12 @@ options:
     level_names: "default"  # Add more later...
     lobby_enum: export_lobby_enum()
     lobby_location: "lobby_location"
-    dog_house_location: "dog_house_location"  # Currently unused...
 
     sign_enum: "sign"
+
+function get_levels() :: texts:
+    set {_level_names::*} to {@level_names} split at ", "
+    return {_level_names::*}
 
 function _init_level(level_name: text):
     set {_yaml_name} to join {_level_name} and ".yaml"
@@ -29,14 +32,10 @@ function _init_level(level_name: text):
     clear {_ready_players::*}
     {_dict}.put("ready_players", {_ready_players::*})
 
-    set {_serialized} to {_dict}.serialize()
+    set {_serialized} to Utils.serialize({_dict})
     set {level::%{_level_name}%::metadata} to {_serialized}
 
-function get_levels() :: texts:
-    set {_level_names::*} to {@level_names} split at ", "
-    return {_level_names::*}
-
-function init_levels():  # Or reset...
+function init_levels():
     set {_level_names::*} to get_levels()
     loop {_level_names::*}:
         _init_level(loop-value)
@@ -45,7 +44,60 @@ on load:
     loop players:
         if in_lobby(loop-player) is true:
             _reset_player(loop-player)
-    init_levels()
+    init_levels()  # Aka, reset...
+
+function _update_level_data(level_name: text, can_start: boolean = true):
+    set {_status} to get_key({_level_name}, "status")
+    if {_status} is not {@lobby_enum}:
+        stop
+
+    set {_players_list} to get_key({_level_name}, "players")
+    set {_players::*} to convert_to_skript_list({_players_list})  # Conver to Skript...
+
+    clear {_ready_players::*}  # Skript...
+    loop {_players::*}:
+        set {_player} to loop-value
+        set {_player} to {_player} parsed as player
+        set {_player_name} to "%{_player}%"
+
+        set {_is_ready} to get_key({_player}, "is_ready")
+        if {_is_ready} is true:
+            add {_player_name} to {_ready_players::*}
+
+    set {_ready_players_list} to Utils.createEmptyList()
+
+    loop {_ready_players::*}:  # Cannot use `addAll(...)`...
+        set {_player_name} to loop-value
+        {_ready_players_list}.add({_player_name})
+
+    set_key({_level_name}, "ready_players", {_ready_players_list})
+
+    set {_min_players} to get_key({_level_name}, "g_eq")
+    set {_num_curr_players} to size of {_ready_players::*}
+    loop {_players::*}:
+        set {_player_name} to loop-value
+        set {_player} to {_player_name} parsed as player
+        set {_bar} to "<%{@red}%>%{_num_curr_players}%/%{_min_players}% ready"
+        send action bar {_bar} to {_player}
+
+    if {_can_start} is false:
+        stop
+
+    # Check enough players...
+    if {_num_curr_players} is greater than or equal to {_min_players}:
+        broadcast "Start game!"
+
+every second:
+    set {_level_names::*} to get_levels()
+    loop {_level_names::*}:
+        set {_level_name} to loop-value
+
+        set {_status} to get_key({_level_name}, "status")
+        if {_status} is not {@lobby_enum}:
+            continue
+
+        # Refresh action bar...
+        _update_level_data({_level_name}, false)
 
 function _add_player(player: player, level_name: text):
     set {_players_list} to get_key({_level_name}, "players")
@@ -68,7 +120,7 @@ function _join_level(player: player, level_name: text) :: objects:
         set {_returns::*} to false and "'%{_level_name}%' does not exist!"
         return {_returns::*}
 
-    # TODO: game is full...
+    # TODO: potentially add max number of players per lobby...
     _add_player({_player}, {_level_name})
 
     set {_returns::*} to true and "You joined a game!"
@@ -129,6 +181,10 @@ function _join(player: player, level_name: text):
     if is_null({_status}) is true:
         set_key({_level_name}, "status", {@lobby_enum})
 
+    _update_level_data({_level_name})
+
+# === Join ===
+
 command /join [<text = "default">]:
     trigger:
         _join(player, arg-1)
@@ -165,3 +221,31 @@ on rightclick:
     _join(player, {_line_3})
 
     cancel event
+
+# === Leave ===
+
+function _leave(player: player):
+    if in_game({_player}) is false:
+        set {_message} to format_message("Error", "You are not in a game!", {@red})
+        send {_message} to {_player}
+        stop
+
+    # In game...
+    set {_level_name} to get_key({_player}, "level_name")
+    _remove_player({_player}, {_level_name})
+    _update_level_data({_level_name})
+
+    if {_player} is online:
+        _reset_player({_player}, true)  # Hard...
+        set {_message} to format_message("Fetch", "You left a game!", {@green})
+        send {_message} to {_player}
+
+    # Update level status...
+    set {_players_list} to get_key({_level_name}, "players")
+    set {_length} to {_players_list}.size()
+    if {_length} is 0:
+        set_key({_level_name}, "status", null)
+
+command /leave:
+    trigger:
+        _leave(player)

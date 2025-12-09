@@ -6,7 +6,7 @@ import org.bukkit.entity.Player;
 
 import static java.text.MessageFormat.format;
 
-public class ApplyPotion {
+public class Potions {
     public static List<String> getEffects(Player player) {
         try {
             List<String> idList = new ArrayList<>();
