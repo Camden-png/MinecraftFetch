@@ -2,6 +2,7 @@ package com.camden.skriptutils;
 
 import fr.skytasul.glowingentities.GlowingBlocks;
 import fr.skytasul.glowingentities.GlowingEntities;
+
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.ChatColor;  // Deprecated...
@@ -36,7 +37,7 @@ public class Glow {
             entitiesAPI.setGlowing(entity, viewer, chatColor);
         } catch (Exception ex) {
             LoggerUtil.getLogger().warning(
-                format("Error: '{0}'", ex.getMessage())
+                format("Error: ''{0}''", ex.getMessage())
             );
         }
     }
@@ -51,7 +52,7 @@ public class Glow {
             entitiesAPI.unsetGlowing(entity, viewer);
         } catch (Exception ex) {
             LoggerUtil.getLogger().warning(
-                format("Error: '{0}'", ex.getMessage())
+                format("Error: ''{0}''", ex.getMessage())
             );
         }
     }
@@ -61,7 +62,7 @@ public class Glow {
             return ChatColor.valueOf(color.toUpperCase());
         } catch (Exception ex) {
             LoggerUtil.getLogger().warning(
-                format("Could not convert '{0}' to enum ChatColor", color)
+                format("Could not convert ''{0}'' to enum ChatColor", color)
             );
         }
         return ChatColor.WHITE;

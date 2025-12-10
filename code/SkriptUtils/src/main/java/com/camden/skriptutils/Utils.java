@@ -35,7 +35,7 @@ public class Utils {
             return mapper.writer(printer).writeValueAsString(map);
         } catch (Exception ex) {
             LoggerUtil.getLogger().warning(
-                format("Dict serialization failed: '{0}'", ex.getMessage())
+                format("Dict serialization failed: ''{0}''", ex.getMessage())
             );
         }
         return null;
@@ -52,7 +52,7 @@ public class Utils {
             return map;
         } catch (Exception ex) {
             LoggerUtil.getLogger().warning(
-                format("Dict deserialization failed: '{0}'", ex.getMessage())
+                format("Dict deserialization failed: ''{0}''", ex.getMessage())
             );
         }
         return null;

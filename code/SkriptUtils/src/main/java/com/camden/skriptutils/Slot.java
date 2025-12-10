@@ -16,7 +16,7 @@ public class Slot {
             player.getInventory().setHeldItemSlot(slotIndex);
         } catch (Exception ex) {
             LoggerUtil.getLogger().warning(
-                format("Error: '{0}'", ex.getMessage())
+                format("Error: ''{0}''", ex.getMessage())
             );
         }
     }

@@ -31,7 +31,7 @@ public class YAML {
             return map;
         } catch (Exception ex) {
             LoggerUtil.getLogger().warning(
-                format("Error: '{0}'", ex.getMessage())
+                format("Error: ''{0}''", ex.getMessage())
             );
         }
         return new LinkedHashMap<>();
