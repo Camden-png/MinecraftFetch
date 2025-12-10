@@ -27,7 +27,7 @@ function _init_level(level_name: text):
     set {_dict} to YAML.load({_yaml_name})
 
     {_dict}.put("status", null)
-    clear {_players::*} 
+    clear {_players::*}
     {_dict}.put("players", {_players::*})
     clear {_ready_players::*}
     {_dict}.put("ready_players", {_ready_players::*})

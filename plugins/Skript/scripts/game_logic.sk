@@ -64,7 +64,7 @@ command /spawn:
         if in_game(player) is true:
             _leave(player)
             stop
-        
+
         set {_message} to format_message("TP", "Teleported...", {@green})
         send {_message} to player
         tp_to_spawn(player)

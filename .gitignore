@@ -1,6 +1,7 @@
 *.un~
 *~
 
+.idea/
 .vscode/
 .console_history
 

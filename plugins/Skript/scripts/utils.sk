@@ -65,7 +65,7 @@ function _util_key(target: object) :: objects:
     if {level::%{_target}%::metadata} is set:
         set {_prefix} to "level"
         set {_stop} to false
-    
+
     set {_returns::*} to {_stop} and {_prefix}
     return {_returns::*}
 
@@ -183,7 +183,7 @@ function in_menu(player: player) :: boolean:
     set {_status} to get_key({_player}, "status")
     if {_status} is {@menu_enum}:
         return true
-    return false    
+    return false
 
 function in_lobby(player: player) :: boolean:
     set {_status} to get_key({_player}, "status")
