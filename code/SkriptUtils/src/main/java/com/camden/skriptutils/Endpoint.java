@@ -1,12 +1,17 @@
+// TODO: expand to levels, pull dynamically
+
 package com.camden.skriptutils;
 
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+
 import ch.njol.skript.variables.Variables;
 import fi.iki.elonen.NanoHTTPD;
 
@@ -30,18 +35,22 @@ public class Endpoint extends NanoHTTPD {
         if ("/get_players".equalsIgnoreCase(uri)) {
             List<LinkedHashMap<String, Object>> players = Bukkit.getOnlinePlayers()
                 .stream()
+                .sorted(Comparator.comparing(Player::getName))
                 .map(player -> {
                     LinkedHashMap<String, Object> map = new LinkedHashMap<>();
                     map.put("player_name", player.getName());
 
-                    String uuid = player.getUniqueId().toString();
-                    map.put("uuid", uuid);
-
                     // Get Skript variable...
+                    String uuid = player.getUniqueId().toString();
+
                     String variableName = format("game::{0}::metadata", uuid);
                     Object _skriptValue = Variables.getVariable(variableName, null, false);
-                    String skriptValue = _skriptValue instanceof String ? (String) _skriptValue : null;
-                    Map<String, Object> data = Utils.deserialize(skriptValue);
+                    Map<String, Object> data = new LinkedHashMap<>();
+                    if (_skriptValue instanceof String) {
+                        String skriptValue = (String) _skriptValue;
+                        data = Utils.deserialize(skriptValue);
+                        data.remove("mode");
+                    }
                     map.put("data", data);
 
                     return map;
