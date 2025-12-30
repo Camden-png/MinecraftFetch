@@ -14,17 +14,17 @@ except ImportError:
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PARENT_DIR = os.path.dirname(SCRIPT_DIR)
 PS1_EXTENSION = ".ps1"
-SK_DIR = os.path.join(
-    PARENT_DIR, "plugins", "Skript", "scripts"
-)
-SK_EXTENSION = ".sk"
 JAVA_DIR = os.path.join(
     PARENT_DIR, "code", "SkriptUtils"
 )
 JAVA_EXTENSION = ".java"
+SK_DIR = os.path.join(
+    PARENT_DIR, "plugins", "Skript", "scripts"
+)
+SK_EXTENSION = ".sk"
 
 UTF_8 = "utf-8"
-BOM_CHAR = "\uFEFF"
+BOM_CHAR = "\uFEFF"  # noqa
 
 CHANGED_FILES_KEY = "changed_files"
 CHANGED_LINES_KEY = "changed_lines"
@@ -144,9 +144,9 @@ class Formatter:
 
     def format(self) -> None:
         ps1_tuples = self._get_ps1_tuples()
-        sk_tuples = self._get_sk_tuples()
         java_tuples = self._get_java_tuples()
-        tuples = ps1_tuples + sk_tuples + java_tuples
+        sk_tuples = self._get_sk_tuples()
+        tuples = ps1_tuples + java_tuples + sk_tuples
         if not tuples:
             return
 

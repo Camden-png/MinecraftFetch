@@ -4,6 +4,7 @@
 .idea/
 .vscode/
 .console_history
+.env
 
 cache/
 config/
