@@ -21,28 +21,22 @@ SEPERATOR = os.path.sep
 METADATA_JSON = "metadata.json"
 
 OGG_EXTENSION = ".ogg"
-AUDIO_EXTENSIONS = [".mp3", ".wav", ".ogg"]
+AUDIO_EXTENSIONS = [".mp3", ".wav", OGG_EXTENSION]
 
 MCMETA = {
   "pack": {
-    "pack_format": 34,  # https://minecraft.wiki/w/pack_format
+    "pack_format": 64,  # https://minecraft.wiki/w/pack_format
     "description": "Custom audio for Fetch!"
   }
 }
 
 SANITY_CHECK = "ffmpeg version"
-RESAMPLE_CMD = 'ffmpeg -i {input} -ar 44100 -c:a libvorbis {output} -y'  # noqa
+RESAMPLE_CMD = 'ffmpeg -i "{input}" -vn -c:a libvorbis -ar 44100 "{output}" -y'  # noqa
 
 
-def _get_paths(_dir: str, predicate: Callable[[str], bool]) -> List[str]:
-    paths = []
-    for i, (root, _, files) in enumerate(os.walk(_dir)):
-        if i > 1:
-            break
-        for _file in files:
-            if predicate(_file):
-                paths.append(os.path.join(root, _file))
-    return paths
+def dumps(_input: Any, **kwargs) -> str:
+    json_str = json.dumps(_input, indent=2, ensure_ascii=False)
+    return json_str.replace(r"\\", "/")
 
 
 def get_metadata_paths(_dir: str = INPUT_SOUNDS_DIR) -> List[str]:
@@ -55,6 +49,17 @@ def get_audio_paths(_dir: str = INPUT_SOUNDS_DIR) -> List[str]:
     return _get_paths(
         _dir, lambda _file: os.path.splitext(_file)[1] in AUDIO_EXTENSIONS
     )
+
+
+def _get_paths(_dir: str, predicate: Callable[[str], bool]) -> List[str]:
+    paths = []
+    for i, (root, _, files) in enumerate(os.walk(_dir)):
+        if i > 1:
+            break
+        for _file in files:
+            if predicate(_file):
+                paths.append(os.path.join(root, _file))
+    return paths
 
 
 def _run_command(command: str) -> str:
@@ -76,7 +81,7 @@ class DataPacker:
         # Print `audio_dict`
         print(
             "Music/sounds: ...\n" +
-            json.dumps(audio_dict, indent=2, ensure_ascii=False)
+            dumps(audio_dict, indent=2, ensure_ascii=False)
         )
 
         sounds_dict = {}
@@ -102,26 +107,27 @@ class DataPacker:
                 "category": overrides_dict.get("category") or ("music" if is_music else "master"),
                 "sounds": [{
                     "name": os.path.splitext(_dir)[0],
-                    "volume": overrides_dict.get("volume", 1.0),
-                    "stream": is_music
+                    "volume": overrides_dict.get("volume", 1.0)
                 }]
             }
 
         print()
 
         # Print `sounds.json`
+        json_str = dumps(sounds_dict, indent=2, ensure_ascii=False)
         print(
             "Sounds.json: ...\n" +
-            json.dumps(sounds_dict, indent=2, ensure_ascii=False)
+            dumps(sounds_dict, indent=2, ensure_ascii=False)
         )
 
         with open(os.path.join(MINECRAFT_DIR, "sounds.json"), "w") as json_file:
-            json.dump(sounds_dict, json_file, indent=2, ensure_ascii=False)
+            json_file.write(json_str)
 
     @staticmethod
     def _get_metadata_dict() -> Dict[str, Dict[str, Any]]:
         metadata_dict = {}
         for metadata_path in get_metadata_paths():
+            print(metadata_path)
             type_dir = metadata_path.split(SEPERATOR)[-2]
             with open(metadata_path) as json_file:
                 data = json.load(json_file)
@@ -156,8 +162,11 @@ class DataPacker:
         )
 
         cmd_output = _run_command(cmd)
-        if not cmd_output.startswith(SANITY_CHECK):
-            raise RuntimeError(f"Failed to resample '{identifier}'!")
+        if (
+            not cmd_output.startswith(SANITY_CHECK) or "error" in cmd_output.lower()
+        ):
+            trace = cmd_output.splitlines()[-5:]
+            raise RuntimeError(f"Failed to resample '{identifier}'! Trace: '{trace}'")
 
 
 def main() -> None:
@@ -183,6 +192,9 @@ def main() -> None:
     # Resample audio files & pack into a datapack...
     data_packer = DataPacker()
     data_packer.pack()
+
+    # Create zip...
+    shutil.make_archive("pack", "zip", PACK_DIR)
 
 
 if __name__ == "__main__":

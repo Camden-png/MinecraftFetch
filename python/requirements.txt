@@ -1,3 +1,4 @@
 colorama
 dropbox
 python-dotenv
+tzdata

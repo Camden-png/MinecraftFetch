@@ -4,8 +4,7 @@
     "sounds": [
       {
         "name": "music/custom/zzz",
-        "volume": 0.95,
-        "stream": true
+        "volume": 1.0
       }
     ]
   }
