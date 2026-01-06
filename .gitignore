@@ -5,6 +5,7 @@
 .vscode/
 .console_history
 .env
+.DS_Store
 
 cache/
 config/

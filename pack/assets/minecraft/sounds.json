@@ -1,0 +1,12 @@
+{
+  "music.custom.zzz": {
+    "category": "music",
+    "sounds": [
+      {
+        "name": "music/custom/zzz",
+        "volume": 0.95,
+        "stream": true
+      }
+    ]
+  }
+}
