@@ -115,10 +115,7 @@ class DataPacker:
 
         # Print `sounds.json`
         json_str = dumps(sounds_dict, indent=2, ensure_ascii=False)
-        print(
-            "Sounds.json: ...\n" +
-            dumps(sounds_dict, indent=2, ensure_ascii=False)
-        )
+        print("Sounds.json: ...\n" + json_str)
 
         with open(os.path.join(MINECRAFT_DIR, "sounds.json"), "w") as json_file:
             json_file.write(json_str)
